@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        // vscode更新之前暂时用这个方式吧,目前node版本比较古老
+        "module": "CommonJS",
+        "target": "ES2022",
+        "outDir": "out",
+        "lib": ["ES2020", "ESNext"],
+        "sourceMap": true,
+        "rootDir": "src",
+        "strict": false,
+        "allowJs": true,
+        // "moduleResolution": "nodenext",
+        "resolveJsonModule": true,
+    },
+    "include": ["src/**/*", "src/**/*.json"]
+    // "exclude": ["node_modules", "**/*.spec.ts"]
+}

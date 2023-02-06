@@ -1,0 +1,63 @@
+{
+	"arrowPointAtCenter": {
+		"description": "Whether the arrow is pointed at the center of target",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"autoAdjustOverflow": {
+		"description": "Whether to adjust popup placement automatically when popup is off screen",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"defaultVisible": {
+		"description": "Whether the floating tooltip card is visible by default",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"getPopupContainer": {
+		"description": "The DOM container of the tip, the default behavior is to create a div element in body.",
+		"optionType": "Function(triggerNode)",
+		"defaultValue": "() => document.body"
+	},
+	"mouseEnterDelay": {
+		"description": "Delay in seconds, before tooltip is shown on mouse enter",
+		"optionType": "number",
+		"defaultValue": "0"
+	},
+	"mouseLeaveDelay": {
+		"description": "Delay in seconds, before tooltip is hidden on mouse leave",
+		"optionType": "number",
+		"defaultValue": "0.1"
+	},
+	"overlayClassName": {
+		"description": "Class name of the tooltip card",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"overlayStyle": {
+		"description": "Style of the tooltip card",
+		"optionType": "object",
+		"defaultValue": "-"
+	},
+	"placement": {
+		"description": "The position of the tooltip relative to the target, which can be one of top left right bottom topLeft topRight bottomLeft bottomRight leftTop leftBottom rightTop rightBottom",
+		"optionType": "string",
+		"defaultValue": "top"
+	},
+	"trigger": {
+	  "options": ["hover", "focus", "click", "contextmenu"],
+		"description": "Tooltip trigger mode",
+		"optionType": "hover | focus | click | contextmenu",
+		"defaultValue": "hover"
+	},
+	"visible": {
+		"description": "Whether the floating tooltip card is visible or not",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"align": {
+		"description": "this value will be merged into placement's config, please refer to the settings dom-align",
+		"optionType": "Object",
+		"defaultValue": "-"
+	}
+}

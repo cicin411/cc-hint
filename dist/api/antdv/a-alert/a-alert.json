@@ -1,0 +1,48 @@
+{
+	"afterClose": {
+		"description": "Called when close animation is finished",
+		"optionType": "() => void",
+		"defaultValue": "-"
+	},
+	"banner": {
+		"description": "Whether to show as banner",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"closable": {
+		"description": "Whether Alert can be closed",
+		"optionType": "boolean",
+		"defaultValue": "-"
+	},
+	"closeText": {
+		"description": "Close text to show",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	},
+	"description": {
+		"description": "Additional content of Alert",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	},
+	"icon": {
+		"description": "Custom icon, effective when showIcon is true",
+		"optionType": "vnode | slot",
+		"defaultValue": "-"
+	},
+	"message": {
+		"description": "Content of Alert",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	},
+	"showIcon": {
+		"description": "Whether to show icon",
+		"optionType": "boolean",
+		"defaultValue": "false, in banner mode default is true"
+	},
+	"type": {
+	  "options": ["success", "info", "warning", "error"],
+		"description": "Type of Alert styles, options: success, info, warning, error",
+		"optionType": "string",
+		"defaultValue": "info, in banner mode default is warning"
+	}
+}

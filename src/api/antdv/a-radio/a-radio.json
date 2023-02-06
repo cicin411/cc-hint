@@ -1,0 +1,27 @@
+{
+	"autoFocus": {
+		"description": "get focus when component mounted",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"checked": {
+		"description": "Specifies whether the radio is selected.",
+		"optionType": "boolean",
+		"defaultValue": "-"
+	},
+	"defaultChecked": {
+		"description": "Specifies the initial state: whether or not the radio is selected.",
+		"optionType": "boolean",
+		"defaultValue": ""
+	},
+	"disabled": {
+		"description": "Disable radio",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"value": {
+		"description": "According to value for comparison, to determine whether the selected",
+		"optionType": "any",
+		"defaultValue": "-"
+	}
+}

@@ -1,0 +1,57 @@
+{
+	"offset": {
+		"description": "the number of cells to offset Col from the left",
+		"optionType": "number",
+		"defaultValue": "0"
+	},
+	"order": {
+		"description": "raster order, used in flex layout mode",
+		"optionType": "number",
+		"defaultValue": "0"
+	},
+	"pull": {
+		"description": "the number of cells that raster is moved to the left",
+		"optionType": "number",
+		"defaultValue": "0"
+	},
+	"push": {
+		"description": "the number of cells that raster is moved to the right",
+		"optionType": "number",
+		"defaultValue": "0"
+	},
+	"span": {
+		"description": "raster number of cells to occupy, 0 corresponds to display: none",
+		"optionType": "number",
+		"defaultValue": "none"
+	},
+	"xs": {
+		"description": "<576px and also default setting, could be a span value or an object containing above props",
+		"optionType": "number|object",
+		"defaultValue": "-"
+	},
+	"sm": {
+		"description": "≥576px, could be a span value or an object containing above props",
+		"optionType": "number|object",
+		"defaultValue": "-"
+	},
+	"md": {
+		"description": "≥768px, could be a span value or an object containing above props",
+		"optionType": "number|object",
+		"defaultValue": "-"
+	},
+	"lg": {
+		"description": "≥992px, could be a span value or an object containing above props",
+		"optionType": "number|object",
+		"defaultValue": "-"
+	},
+	"xl": {
+		"description": "≥1200px, could be a span value or an object containing above props",
+		"optionType": "number|object",
+		"defaultValue": "-"
+	},
+	"xxl": {
+		"description": "≥1600px, could be a span value or an object containing above props",
+		"optionType": "number|object",
+		"defaultValue": "-"
+	}
+}

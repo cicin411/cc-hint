@@ -1,0 +1,17 @@
+{
+	"autosize": {
+		"description": "Height autosize feature, can be set to true|false or an object { minRows: 2, maxRows: 6 }",
+		"optionType": "boolean|object",
+		"defaultValue": "false"
+	},
+	"defaultValue": {
+		"description": "The initial input content",
+		"optionType": "string",
+		"defaultValue": ""
+	},
+	"value": {
+		"description": "The input content value",
+		"optionType": "string",
+		"defaultValue": ""
+	}
+}

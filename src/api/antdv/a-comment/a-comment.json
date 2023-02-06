@@ -1,0 +1,22 @@
+{
+  "actions": {
+      "description": "List of action items rendered below the comment content",
+      "optionType": "Array|slot"
+  },
+  "author": {
+      "description": "The element to display as the comment author",
+      "optionType": "String|slot"
+  },
+  "avatar": {
+      "description": "The element to display as the comment avatar - generally an antd Avatar or src",
+      "optionType": "String|slot"
+  },
+  "content": {
+      "description": "The main content of the comment",
+      "optionType": "String|slot"
+  },
+  "datetime": {
+      "description": "A datetime element containing the time to be displayed",
+      "optionType": "String|slot"
+  }
+}

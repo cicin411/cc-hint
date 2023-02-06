@@ -1,0 +1,27 @@
+{
+	"active": {
+		"description": "Show animation effect",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"avatar": {
+		"description": "Show avatar placeholder",
+		"optionType": "boolean | SkeletonAvatarProps",
+		"defaultValue": "false"
+	},
+	"loading": {
+		"description": "Display the skeleton when true",
+		"optionType": "boolean",
+		"defaultValue": "-"
+	},
+	"paragraph": {
+		"description": "Show paragraph placeholder",
+		"optionType": "boolean | SkeletonParagraphProps",
+		"defaultValue": "true"
+	},
+	"title": {
+		"description": "Show title placeholder",
+		"optionType": "boolean | SkeletonTitleProps",
+		"defaultValue": "true"
+	}
+}

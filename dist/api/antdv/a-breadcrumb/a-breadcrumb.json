@@ -1,0 +1,22 @@
+{
+	"itemRender": {
+		"description": "Custom item renderer, slot=\"itemRender\" and slot-scope=\"{route, params, routes, paths}\"",
+		"optionType": "({route, params, routes, paths}) => vNode",
+		"defaultValue": ""
+	},
+	"params": {
+		"description": "Routing parameters",
+		"optionType": "object",
+		"defaultValue": ""
+	},
+	"routes": {
+		"description": "The routing stack information of router",
+		"optionType": "object[]",
+		"defaultValue": ""
+	},
+	"separator": {
+		"description": "Custom separator",
+		"optionType": "string|slot",
+		"defaultValue": ""
+	}
+}

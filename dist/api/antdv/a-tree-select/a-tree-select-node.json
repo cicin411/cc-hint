@@ -1,0 +1,42 @@
+{
+	"selectable": {
+		"description": "can be selected",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"disableCheckbox": {
+		"description": "Disables the checkbox of the treeNode",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"disabled": {
+		"description": "Disabled or not",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"isLeaf": {
+		"description": "Leaf node or not",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"key": {
+		"description": "Required property, should be unique in the tree",
+		"optionType": "string | number",
+		"defaultValue": "-"
+	},
+	"title": {
+		"description": "Content showed on the treeNodes",
+		"optionType": "string|slot",
+		"defaultValue": "'---'"
+	},
+	"value": {
+		"description": "Will be treated as treeNodeFilterProp by default, should be unique in the tree",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"scopedSlots": {
+		"description": "When using treeNodes, you can use this property to configure the properties that support the slot, such as scopedSlots: { title: 'XXX'}",
+		"optionType": "object",
+		"defaultValue": "-"
+	}
+}

@@ -1,0 +1,37 @@
+{
+	"defaultValue": {
+		"description": "Default selected value",
+		"optionType": "any",
+		"defaultValue": "-"
+	},
+	"disabled": {
+		"description": "Disable all radio buttons",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"name": {
+		"description": "The name property of all input[type=\"radio\"] children",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"options": {
+		"description": "set children optional",
+		"optionType": "string[] | Array<{ label: string value: string disabled?: boolean }>",
+		"defaultValue": "-"
+	},
+	"size": {
+		"description": "size for radio button style",
+		"optionType": "large | default | small",
+		"defaultValue": "default"
+	},
+	"value": {
+		"description": "Used for setting the currently selected value.",
+		"optionType": "any",
+		"defaultValue": "-"
+	},
+	"buttonStyle": {
+		"description": "style type of radio button",
+		"optionType": "outline | solid",
+		"defaultValue": "outline"
+	}
+}

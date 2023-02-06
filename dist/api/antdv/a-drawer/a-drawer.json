@@ -1,0 +1,73 @@
+{
+	"closable": {
+		"description": "Whether a close (x) button is visible on top right of the Drawer dialog or not.",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"destroyOnClose": {
+		"description": "Whether to unmount child components on closing drawer or not.",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"getContainer": {
+		"description": "Return the mounted node for Drawer.",
+		"optionType": "HTMLElement | () => HTMLElement | Selectors",
+		"defaultValue": "'body'"
+	},
+	"mask": {
+		"description": "Whether to show mask or not.",
+		"optionType": "Boolean",
+		"defaultValue": "true"
+	},
+	"maskClosable": {
+		"description": "Clicking on the mask (area outside the Drawer) to close the Drawer or not.",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"maskStyle": {
+		"description": "Style for Drawer's mask element.",
+		"optionType": "object",
+		"defaultValue": "{}"
+	},
+	"title": {
+		"description": "The title for Drawer.",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	},
+	"visible": {
+		"description": "Whether the Drawer dialog is visible or not.",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"wrapClassName": {
+		"description": "The class name of the container of the Drawer dialog.",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"wrapStyle": {
+		"description": "The style of the container of the Drawer dialog.",
+		"optionType": "object",
+		"defaultValue": "-"
+	},
+	"width": {
+		"description": "Width of the Drawer dialog.",
+		"optionType": "string|number",
+		"defaultValue": "256"
+	},
+	"height": {
+		"description": "placement is top or bottom, height of the Drawer dialog.",
+		"optionType": "string|number",
+		"defaultValue": "-"
+	},
+	"zIndex": {
+		"description": "The z-index of the Drawer.",
+		"optionType": "Number",
+		"defaultValue": "1000"
+	},
+	"placement": {
+	  "options": ["top", "left", "bottom", "right"],
+		"description": "The placement of the Drawer.",
+		"optionType": "'top' | 'right' | 'bottom' | 'left'",
+		"defaultValue": "'right'"
+	}
+}

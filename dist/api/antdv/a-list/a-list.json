@@ -1,0 +1,62 @@
+{
+	"bordered": {
+		"description": "Toggles rendering of the border around the list",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"footer": {
+		"description": "List footer renderer",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	},
+	"grid": {
+		"description": "The grid type of list. You can set grid to something like {gutter: 16, column: 4}",
+		"optionType": "object",
+		"defaultValue": "-"
+	},
+	"header": {
+		"description": "List header renderer",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	},
+	"itemLayout": {
+		"description": "The layout of list, default is horizontal, If a vertical list is desired, set the itemLayout property to vertical",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"loading": {
+		"description": "Shows a loading indicator while the contents of the list are being fetched",
+		"optionType": "boolean|object",
+		"defaultValue": "false"
+	},
+	"loadMore": {
+		"description": "Shows a load more content",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	},
+	"locale": {
+		"description": "i18n text including empty text",
+		"optionType": "object",
+		"defaultValue": "emptyText: 'No Data' \n"
+	},
+	"pagination": {
+		"description": "Pagination config, hide it by setting it to false",
+		"optionType": "boolean | object",
+		"defaultValue": "false"
+	},
+	"split": {
+		"description": "Toggles rendering of the split under the list item",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"renderItem": {
+		"description": "Custom item renderer, slot=\"renderItem\" and slot-scope=\"item, index\"",
+		"optionType": "(item, index) => vNode",
+		"defaultValue": ""
+	},
+	"rowKey": {
+		"description": "Specify the key that will be used for uniquely identify each element",
+		"optionType": "item => string|number",
+		"defaultValue": ""
+	}
+}

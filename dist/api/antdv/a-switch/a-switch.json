@@ -1,0 +1,42 @@
+{
+	"autoFocus": {
+		"description": "get focus when component mounted",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"checked": {
+		"description": "determine whether the Switch is checked",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"checkedChildren": {
+		"description": "content to be shown when the state is checked",
+		"optionType": "string|slot",
+		"defaultValue": ""
+	},
+	"defaultChecked": {
+		"description": "to set the initial state",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"disabled": {
+		"description": "Disable switch",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"loading": {
+		"description": "loading state of switch",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"size": {
+		"description": "the size of the Switch, options: default small",
+		"optionType": "string",
+		"defaultValue": "default"
+	},
+	"unCheckedChildren": {
+		"description": "content to be shown when the state is unchecked",
+		"optionType": "string|slot",
+		"defaultValue": ""
+	}
+}

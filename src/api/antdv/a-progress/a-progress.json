@@ -1,0 +1,67 @@
+{
+	"format": {
+		"description": "template function of the content",
+		"optionType": "function(percent, successPercent)",
+		"defaultValue": "percent => percent + '%'"
+	},
+	"gapDegree (type=circle)": {
+		"description": "the gap degree of half circle, 0 ~ 360",
+		"optionType": "number",
+		"defaultValue": "0"
+	},
+	"gapPosition (type=circle)": {
+		"description": "the gap position, options: top bottom left right",
+		"optionType": "string",
+		"defaultValue": "top"
+	},
+	"percent": {
+		"description": "to set the completion percentage",
+		"optionType": "number",
+		"defaultValue": "0"
+	},
+	"showInfo": {
+		"description": "whether to display the progress value and the status icon",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"status": {
+		"description": "to set the status of the Progress, options: normal success exception active",
+		"optionType": "string",
+		"defaultValue": "normal"
+	},
+	"strokeWidth (type=line)": {
+		"description": "to set the width of the progress bar, unit: px",
+		"optionType": "number",
+		"defaultValue": "10"
+	},
+	"strokeWidth (type=circle)": {
+		"description": "to set the width of the circular progress bar, unit: percentage of the canvas width",
+		"optionType": "number",
+		"defaultValue": "6"
+	},
+	"strokeLinecap": {
+		"description": "to set the style of the progress linecap",
+		"optionType": "Enum{ 'round', 'square' }",
+		"defaultValue": "round"
+	},
+	"strokeColor": {
+		"description": "color of progress bar",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"successPercent": {
+		"description": "segmented success percent, works when type=\"line\"",
+		"optionType": "number",
+		"defaultValue": "0"
+	},
+	"type": {
+		"description": "to set the type, options: line circle dashboard",
+		"optionType": "string",
+		"defaultValue": "line"
+	},
+	"width (type=circle)": {
+		"description": "to set the canvas width of the circular progress bar, unit: px",
+		"optionType": "number",
+		"defaultValue": "120"
+	}
+}

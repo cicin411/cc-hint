@@ -1,0 +1,62 @@
+{
+	"autoFocus": {
+		"description": "get focus when component mounted",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"defaultValue": {
+		"description": "initial value",
+		"optionType": "number",
+		"defaultValue": ""
+	},
+	"disabled": {
+		"description": "disable the input",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"formatter": {
+		"description": "Specifies the format of the value presented",
+		"optionType": "function(value: number | string): string",
+		"defaultValue": "-"
+	},
+	"max": {
+		"description": "max value",
+		"optionType": "number",
+		"defaultValue": "Infinity"
+	},
+	"min": {
+		"description": "min value",
+		"optionType": "number",
+		"defaultValue": "-Infinity"
+	},
+	"parser": {
+		"description": "Specifies the value extracted from formatter",
+		"optionType": "function( string): number",
+		"defaultValue": "-"
+	},
+	"precision": {
+		"description": "precision of input value",
+		"optionType": "number",
+		"defaultValue": "-"
+	},
+	"decimalSeparator": {
+		"description": "decimal separator",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"size": {
+		"description": "width of input box",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"step": {
+		"description": "The number to which the current value is increased or decreased. It can be an integer or decimal.",
+		"optionType": "number|string",
+		"defaultValue": "1"
+	},
+	"value": {
+		"description": "current value",
+		"optionType": "number",
+		"defaultValue": ""
+	}
+}

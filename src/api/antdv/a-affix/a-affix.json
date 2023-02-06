@@ -1,0 +1,17 @@
+{
+	"offsetBottom": {
+		"description": "Pixels to offset from bottom when calculating position of scroll",
+		"optionType": "number",
+		"defaultValue": "-"
+	},
+	"offsetTop": {
+		"description": "Pixels to offset from top when calculating position of scroll",
+		"optionType": "number",
+		"defaultValue": "0"
+	},
+	"target": {
+		"description": "specifies the scrollable area dom node",
+		"optionType": "() => HTMLElement",
+		"defaultValue": "() => window"
+	}
+}

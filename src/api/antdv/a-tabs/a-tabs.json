@@ -1,0 +1,55 @@
+{
+	"activeKey": {
+		"description": "Current TabPane's key",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"animated": {
+		"description": "Whether to change tabs with animation. Only works while tabPosition=\"top\"\\|\"bottom\"",
+		"optionType": "boolean | {inkBar:boolean, tabPane:boolean}",
+		"defaultValue": "true, false when type=\"card\""
+	},
+	"defaultActiveKey": {
+		"description": "Initial active TabPane's key, if activeKey is not set.",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"hideAdd": {
+		"description": "Hide plus icon or not. Only works while type=\"editable-card\"",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"size": {
+	  "options": ["large", "default", "small"],
+		"description": "preset tab bar size",
+		"optionType": "large | default | small",
+		"defaultValue": "default"
+	},
+	"tabBarExtraContent": {
+		"description": "Extra content in tab bar",
+		"optionType": "slot",
+		"defaultValue": "-"
+	},
+	"tabBarStyle": {
+		"description": "Tab bar style object",
+		"optionType": "object",
+		"defaultValue": "-"
+	},
+	"tabPosition": {
+	  "options": ["top", "right", "bottom", "left"],
+		"description": "Position of tabs",
+		"optionType": "top | right | bottom | left",
+		"defaultValue": "top"
+	},
+	"type": {
+	  "options": ["line", "card", "editable-card"],
+		"description": "Basic style of tabs",
+		"optionType": "line | card | editable-card",
+		"defaultValue": "line"
+	},
+	"tabBarGutter": {
+		"description": "The gap between tabs",
+		"optionType": "number",
+		"defaultValue": "-"
+	}
+}

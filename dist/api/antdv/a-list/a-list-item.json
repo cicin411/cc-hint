@@ -1,0 +1,12 @@
+{
+	"actions": {
+		"description": "The actions content of list item. If itemLayout is vertical, shows the content on bottom, otherwise shows content on the far right.",
+		"optionType": "Array<vNode>|slot",
+		"defaultValue": "-"
+	},
+	"extra": {
+		"description": "The extra content of list item. If itemLayout is vertical, shows the content on right, otherwise shows content on the far right.",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	}
+}

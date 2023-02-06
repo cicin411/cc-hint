@@ -1,0 +1,27 @@
+{
+	"cancelText": {
+		"description": "text of the Cancel button",
+		"optionType": "string|slot",
+		"defaultValue": "Cancel"
+	},
+	"okText": {
+		"description": "text of the Confirm button",
+		"optionType": "string|slot",
+		"defaultValue": "Confirm"
+	},
+	"okType": {
+		"description": "Button type of the Confirm button",
+		"optionType": "string",
+		"defaultValue": "primary"
+	},
+	"title": {
+		"description": "title of the confirmation box",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	},
+	"icon": {
+		"description": "customize icon of confirmation",
+		"optionType": "vNode|slot",
+		"defaultValue": "<Icon type=\"exclamation-circle\" />"
+	}
+}

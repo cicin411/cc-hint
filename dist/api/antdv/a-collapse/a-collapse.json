@@ -1,0 +1,32 @@
+{
+	"accordion": {
+		"description": "If true, Collapse renders as Accordion",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"activeKey": {
+		"description": "Key of the active panel",
+		"optionType": "string[]|string",
+		"defaultValue": "No default value. In accordion mode, it's the key of the first panel."
+	},
+	"bordered": {
+		"description": "Toggles rendering of the border around the collapse block",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"defaultActiveKey": {
+		"description": "Key of the initial active panel",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"destroyInactivePanel": {
+		"description": "Destroy Inactive Panel",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"expandIcon": {
+		"description": "allow to customize collapse icon",
+		"optionType": "Function(props):VNode | slot=\"expandIcon\" slot-scope=\"props\"|v-slot:expandIcon=\"props\"",
+		"defaultValue": "-"
+	}
+}

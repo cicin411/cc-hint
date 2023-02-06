@@ -1,0 +1,22 @@
+{
+	"defaultValue": {
+		"description": "Default selected value",
+		"optionType": "string[]",
+		"defaultValue": "[]"
+	},
+	"disabled": {
+		"description": "Disable all checkboxes",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"options": {
+		"description": "Specifies options, you can customize label with slot = \"label\" slot-scope = \"option\"",
+		"optionType": "string[] | Array<{ label: string value: string disabled?: boolean, onChange?: function }>",
+		"defaultValue": "[]"
+	},
+	"value": {
+		"description": "Used for setting the currently selected value.",
+		"optionType": "string[]",
+		"defaultValue": "[]"
+	}
+}

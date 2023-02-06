@@ -1,0 +1,17 @@
+{
+	"avatar": {
+		"description": "The avatar of list item",
+		"optionType": "slot",
+		"defaultValue": "-"
+	},
+	"description": {
+		"description": "The description of list item",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	},
+	"title": {
+		"description": "The title of list item",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	}
+}

@@ -1,0 +1,73 @@
+{
+	"actions": {
+		"description": "The action list, shows at the bottom of the Card.",
+		"optionType": "slots",
+		"defaultValue": "-"
+	},
+	"activeTabKey": {
+		"description": "Current TabPane's key",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"headStyle": {
+		"description": "Inline style to apply to the card head",
+		"optionType": "object",
+		"defaultValue": "-"
+	},
+	"bodyStyle": {
+		"description": "Inline style to apply to the card content",
+		"optionType": "object",
+		"defaultValue": "-"
+	},
+	"bordered": {
+		"description": "Toggles rendering of the border around the card",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"cover": {
+		"description": "Card cover",
+		"optionType": "slot",
+		"defaultValue": "-"
+	},
+	"defaultActiveTabKey": {
+		"description": "Initial active TabPane's key, if activeTabKey is not set.",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"extra": {
+		"description": "Content to render in the top-right corner of the card",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	},
+	"hoverable": {
+		"description": "Lift up when hovering card",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"loading": {
+		"description": "Shows a loading indicator while the contents of the card are being fetched",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"tabList": {
+		"description": "List of TabPane's head, Custom tabs can be created with the scopedSlots property",
+		"optionType": "Array<{key: string, tab: any, scopedSlots: {tab: 'XXX'}}>",
+		"defaultValue": "-"
+	},
+	"size": {
+		"options": ["default", "small"],
+		"description": "Size of card",
+		"optionType": "string",
+		"defaultValue": "default"
+	},
+	"title": {
+		"description": "Card title",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	},
+	"type": {
+		"description": "Card style type, can be set to inner or not set",
+		"optionType": "string",
+		"defaultValue": "-"
+	}
+}

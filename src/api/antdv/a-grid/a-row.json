@@ -1,0 +1,22 @@
+{
+	"align": {
+		"description": "the vertical alignment of the flex layout: top middle bottom",
+		"optionType": "string",
+		"defaultValue": "top"
+	},
+	"gutter": {
+		"description": "spacing between grids, could be a number or a object like { xs: 8, sm: 16, md: 24}",
+		"optionType": "number/object",
+		"defaultValue": "0"
+	},
+	"justify": {
+		"description": "horizontal arrangement of the flex layout: start end center space-around space-between",
+		"optionType": "string",
+		"defaultValue": "start"
+	},
+	"type": {
+		"description": "layout mode, optional flex, browser support",
+		"optionType": "string",
+		"defaultValue": ""
+	}
+}

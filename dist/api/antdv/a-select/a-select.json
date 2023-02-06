@@ -1,0 +1,173 @@
+{
+	"allowClear": {
+		"description": "Show clear button.",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"autoClearSearchValue": {
+		"description": "Whether the current search will be cleared on selecting an item. Only applies when mode is set to multiple or tags.",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"autoFocus": {
+		"description": "Get focus by default",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"defaultActiveFirstOption": {
+		"description": "Whether active first option by default",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"defaultValue": {
+		"description": "Initial selected option.",
+		"optionType": "string|string[]\nnumber|number[]",
+		"defaultValue": "-"
+	},
+	"disabled": {
+		"description": "Whether disabled select",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"dropdownClassName": {
+		"description": "className of dropdown menu",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"dropdownMatchSelectWidth": {
+		"description": "Whether dropdown's width is same with select.",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"dropdownRender": {
+		"description": "Customize dropdown content",
+		"optionType": "(menuNode: VNode, props) => VNode",
+		"defaultValue": "-"
+	},
+	"dropdownStyle": {
+		"description": "style of dropdown menu",
+		"optionType": "object",
+		"defaultValue": "-"
+	},
+	"filterOption": {
+		"description": "If true, filter options by input, if function, filter options against it. The function will receive two arguments, inputValue and option, if the function returns true, the option will be included in the filtered set; Otherwise, it will be excluded.",
+		"optionType": "boolean or function(inputValue, option)",
+		"defaultValue": "true"
+	},
+	"firstActiveValue": {
+		"description": "Value of action option by default",
+		"optionType": "string|string[]",
+		"defaultValue": "-"
+	},
+	"getPopupContainer": {
+		"description": "Parent Node which the selector should be rendered to. Default to body. When position issues happen, try to modify it into scrollable content and position it relative.",
+		"optionType": "function(triggerNode)",
+		"defaultValue": "() => document.body"
+	},
+	"labelInValue": {
+		"description": "whether to embed label in value, turn the format of value from string to {key: string, label: vNodes}",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"maxTagCount": {
+		"description": "Max tag count to show",
+		"optionType": "number",
+		"defaultValue": "-"
+	},
+	"maxTagPlaceholder": {
+		"description": "Placeholder for not showing tags",
+		"optionType": "slot/function(omittedValues)",
+		"defaultValue": "-"
+	},
+	"mode": {
+	  "options": ["default", "multiple", "tags"],
+		"description": "Set mode of Select",
+		"optionType": "'default' | 'multiple' | 'tags'",
+		"defaultValue": "'default'"
+	},
+	"notFoundContent": {
+		"description": "Specify content to show when no result matches..",
+		"optionType": "string|slot",
+		"defaultValue": "'Not Found'"
+	},
+	"optionFilterProp": {
+		"description": "Which prop value of option will be used for filter if filterOption is true",
+		"optionType": "string",
+		"defaultValue": "value"
+	},
+	"optionLabelProp": {
+		"description": "Which prop value of option will render as content of select.",
+		"optionType": "string",
+		"defaultValue": "value for combobox, children for other modes"
+	},
+	"placeholder": {
+		"description": "Placeholder of select",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	},
+	"showSearch": {
+		"description": "Whether show search input in single mode.",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"showArrow": {
+		"description": "Whether to show the drop-down arrow",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"size": {
+		"description": "Size of Select input. default large small",
+		"optionType": "string",
+		"defaultValue": "default"
+	},
+	"suffixIcon": {
+		"description": "The custom suffix icon",
+		"optionType": "VNode | slot",
+		"defaultValue": "-"
+	},
+	"removeIcon": {
+		"description": "The custom remove icon",
+		"optionType": "VNode | slot",
+		"defaultValue": "-"
+	},
+	"clearIcon": {
+		"description": "The custom clear icon",
+		"optionType": "VNode | slot",
+		"defaultValue": "-"
+	},
+	"menuItemSelectedIcon": {
+		"description": "The custom menuItemSelected icon",
+		"optionType": "VNode | slot",
+		"defaultValue": "-"
+	},
+	"tokenSeparators": {
+		"description": "Separator used to tokenize on tag/multiple mode",
+		"optionType": "string[]",
+		"defaultValue": ""
+	},
+	"value": {
+		"description": "Current selected option.",
+		"optionType": "string|number|string[]|number[]",
+		"defaultValue": "-"
+	},
+	"options": {
+		"description": "Data of the selectOption, manual construction work is no longer needed if this property has been set",
+		"optionType": "array<{value, label, [disabled, key, title]}>",
+		"defaultValue": "[]"
+	},
+	"defaultOpen": {
+		"description": "Initial open state of dropdown",
+		"optionType": "boolean",
+		"defaultValue": "-"
+	},
+	"open": {
+		"description": "Controlled open state of dropdown",
+		"optionType": "boolean",
+		"defaultValue": "-"
+	},
+	"loading": {
+		"description": "indicate loading state",
+		"optionType": "Boolean",
+		"defaultValue": "false"
+	}
+}

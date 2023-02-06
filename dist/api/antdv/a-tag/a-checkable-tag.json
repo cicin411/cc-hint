@@ -1,0 +1,7 @@
+{
+	"checked": {
+		"description": "Checked status of Tag",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	}
+}

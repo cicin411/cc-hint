@@ -1,0 +1,17 @@
+{
+	"class": {
+		"description": "container className",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"style": {
+		"description": "to customize the styles",
+		"optionType": "object|string",
+		"defaultValue": "-"
+	},
+	"hasSider": {
+		"description": "whether contain Sider in children, don't have to assign it normally. Useful in ssr avoid style flickering",
+		"optionType": "boolean",
+		"defaultValue": "-"
+	}
+}

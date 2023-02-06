@@ -1,0 +1,22 @@
+{
+	"children": {
+		"description": "sub menus or sub menu items",
+		"optionType": "Array<MenuItem|SubMenu>",
+		"defaultValue": ""
+	},
+	"disabled": {
+		"description": "whether sub menu is disabled or not",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"key": {
+		"description": "unique id of the sub menu",
+		"optionType": "string",
+		"defaultValue": ""
+	},
+	"title": {
+		"description": "title of the sub menu",
+		"optionType": "string|slot",
+		"defaultValue": ""
+	}
+}

@@ -1,0 +1,68 @@
+{
+	"current": {
+		"description": "current page number",
+		"optionType": "number",
+		"defaultValue": "-"
+	},
+	"defaultCurrent": {
+		"description": "default initial page number",
+		"optionType": "number",
+		"defaultValue": "1"
+	},
+	"defaultPageSize": {
+		"description": "default number of data items per page",
+		"optionType": "number",
+		"defaultValue": "10"
+	},
+	"hideOnSinglePage": {
+		"description": "Whether to hide pager on single page",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"itemRender": {
+		"description": "to customize item innerHTML",
+		"optionType": "(page, type: 'page' | 'prev' | 'next', originalElement) => vNode",
+		"defaultValue": "-"
+	},
+	"pageSize": {
+		"description": "number of data items per page",
+		"optionType": "number",
+		"defaultValue": "-"
+	},
+	"pageSizeOptions": {
+		"description": "specify the sizeChanger options",
+		"optionType": "string[]",
+		"defaultValue": "['10', '20', '30', '40']"
+	},
+	"showQuickJumper": {
+		"description": "determine whether you can jump to pages directly",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"showSizeChanger": {
+		"description": "determine whether pageSize can be changed",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"showTotal": {
+		"description": "to display the total number and range",
+		"optionType": "Function(total, range)",
+		"defaultValue": "-"
+	},
+	"simple": {
+		"description": "whether to use simple mode",
+		"optionType": "boolean",
+		"defaultValue": "-"
+	},
+	"size": {
+	  "options": ["small", "large"],
+		"description": "specify the size of Pagination, can be set to small",
+		"optionType": "string",
+		"defaultValue": "\"\""
+	},
+	"total": {
+		"description": "total number of data items",
+		"optionType": "number",
+		"defaultValue": "0"
+	}
+}

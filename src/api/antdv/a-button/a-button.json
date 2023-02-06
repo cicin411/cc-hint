@@ -1,0 +1,50 @@
+{
+    "disabled": {
+        "description": "disabled state of button",
+        "optionType": "boolean",
+        "defaultValue": "false"
+    },
+    "ghost": {
+        "description": "make background transparent and invert text and border colors, added in 2.7",
+        "optionType": "boolean",
+        "defaultValue": "false"
+    },
+    "htmlType": {
+        "description": "set the original html type of button, see: MDN",
+        "optionType": "string",
+        "defaultValue": "button"
+    },
+    "icon": {
+        "description": "set the icon of button, see: Icon component",
+        "optionType": "string",
+        "defaultValue": "-"
+    },
+    "loading": {
+        "description": "set the loading status of button",
+        "optionType": "boolean | { delay: number }",
+        "defaultValue": "false"
+    },
+    "shape": {
+        "options": [ "circle", "round" ],
+        "description": "can be set to circle or omitted",
+        "optionType": "string",
+        "defaultValue": "-"
+    },
+    "size": {
+        "options": [ "small", "large" ],
+        "description": "can be set to small large or omitted",
+        "optionType": "string",
+        "defaultValue": "default"
+    },
+    "type": {
+        "options": [ "primary", "ghost", "dashed", "danger" ],
+        "description": "can be set to primary ghost dashed danger(added in 2.7) or omitted (meaning default)",
+        "optionType": "string",
+        "defaultValue": "default"
+    },
+    "block": {
+        "description": "option to fit button width to its parent width",
+        "optionType": "boolean",
+        "defaultValue": "false"
+    }
+}

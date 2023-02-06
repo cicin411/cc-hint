@@ -1,0 +1,17 @@
+{
+	"avatar": {
+		"description": "avatar or icon",
+		"optionType": "slot",
+		"defaultValue": "-"
+	},
+	"description": {
+		"description": "description content",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	},
+	"title": {
+		"description": "title content",
+		"optionType": "string|slot",
+		"defaultValue": "-"
+	}
+}

@@ -1,0 +1,23 @@
+{
+	"pending": {
+		"description": "Set the last ghost node's existence or its content",
+		"optionType": "boolean|string|slot",
+		"defaultValue": "false"
+	},
+	"pendingDot": {
+		"description": "Set the dot of the last ghost node when pending is true",
+		"optionType": "string|slot",
+		"defaultValue": "<Icon type=\"loading\" />"
+	},
+	"reverse": {
+		"description": "reverse nodes or not",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"mode": {
+	  "options": ["left", "alternate", "right"],
+		"description": "By sending alternate the timeline will distribute the nodes to the left and right.",
+		"optionType": "left | alternate | right",
+		"defaultValue": "left"
+	}
+}

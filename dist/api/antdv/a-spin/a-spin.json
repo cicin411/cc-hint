@@ -1,0 +1,32 @@
+{
+	"delay": {
+		"description": "specifies a delay in milliseconds for loading state (prevent flush)",
+		"optionType": "number (milliseconds)",
+		"defaultValue": "-"
+	},
+	"indicator": {
+		"description": "vue node of the spinning indicator",
+		"optionType": "vNode |slot",
+		"defaultValue": "-"
+	},
+	"size": {
+		"description": "size of Spin, options: small, default and large",
+		"optionType": "string",
+		"defaultValue": "default"
+	},
+	"spinning": {
+		"description": "whether Spin is spinning",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"tip": {
+		"description": "customize description content when Spin has children",
+		"optionType": "string",
+		"defaultValue": "-"
+	},
+	"wrapperClassName": {
+		"description": "className of wrapper when Spin has children",
+		"optionType": "string",
+		"defaultValue": "-"
+	}
+}

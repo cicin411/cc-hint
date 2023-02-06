@@ -1,0 +1,42 @@
+{
+	"allowClear": {
+		"description": "whether to allow clear when click again",
+		"optionType": "boolean",
+		"defaultValue": "true"
+	},
+	"allowHalf": {
+		"description": "whether to allow semi selection",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"autoFocus": {
+		"description": "get focus when component mounted",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"character": {
+		"description": "custom character of rate",
+		"optionType": "String or slot=\"character\"",
+		"defaultValue": "<Icon type=\"star\" />"
+	},
+	"count": {
+		"description": "star count",
+		"optionType": "number",
+		"defaultValue": "5"
+	},
+	"defaultValue": {
+		"description": "default value",
+		"optionType": "number",
+		"defaultValue": "0"
+	},
+	"disabled": {
+		"description": "read only, unable to interact",
+		"optionType": "boolean",
+		"defaultValue": "false"
+	},
+	"value": {
+		"description": "current value",
+		"optionType": "number",
+		"defaultValue": "-"
+	}
+}
