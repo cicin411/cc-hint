@@ -14,6 +14,6 @@ export default defineConfig({
     ],
     shims: false,
     loader: {
-        // 'json': 'json'
+        // 'json': 'json'  // 这里面一个语言一个load[]
     },
 });

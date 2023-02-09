@@ -4491,8 +4491,10 @@ var App = class {
 var AllCompletionItemProvider = class {
   _document;
   _position;
-  tagReg = /<([\w-]+)\s+/g;
-  attrReg = /(?:\(|\s*)(\w+)=['"][^'"]*/;
+  tagReg = /<([-\w一-龟]+)\s+/g;
+  inTagReg = /<([-\w一-龟]+)\s+/g;
+  attrReg = /(?:\(|\s*)([-\w一-龟]+)=['"][^'"]*/;
+  inAttrReg = /[-\w一-龟]+(=['"][^'"=\<\>]*|=[^'"\s]*)?$/;
   tagStartReg = /<([\w-]*)$/;
   pugTagStartReg = /^\s*[\w-]*$/;
   size;
@@ -4513,6 +4515,27 @@ var AllCompletionItemProvider = class {
       line--;
     }
     return;
+  }
+  getThisTag() {
+    let line = this._position.line;
+    let tag;
+    let txt = this.getTextBeforePosition(this._position);
+    while (this._position.line - line < 10 && line >= 0) {
+      if (line !== this._position.line) {
+        txt = this._document.lineAt(line).text;
+      }
+      tag = txt.match(/(?<=<)[-\w一-龟]*/).at(0);
+      if (tag && tag != "")
+        return tag;
+      line--;
+    }
+    return;
+  }
+  getThisAttr() {
+    let text = this.getTextBeforePosition(this._position).match(this.inAttrReg)?.at(0);
+    let right = text?.includes("=") ? "" : this._document.getText(new import_vscode.Range(this._position, new import_vscode.Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "";
+    let left = text?.replace(/=.*$/, "");
+    return left + right;
   }
   getPreAttr() {
     let txt = this.getTextBeforePosition(this._position).replace(/"[^'"]*(\s*)[^'"]*$/, "");
@@ -4692,6 +4715,27 @@ var AllCompletionItemProvider = class {
       return [];
     }
   }
+  provideHover(document, position, token) {
+    let hover = new import_vscode.Hover("ggggggg");
+    this._document = document;
+    this._position = position;
+    const config = import_vscode.workspace.getConfiguration("CC-Hint");
+    this.size = 4;
+    const normalQuotes = '"';
+    this.quotes = normalQuotes;
+    let tag = this.getThisTag();
+    let attr = this.getThisAttr();
+    if (this.isAttrValueStart(tag, attr) || this.isAttrStart(tag)) {
+      let documentation = JSON.stringify(this.getAttrItem(tag, attr) ?? "", null, "\n").replace(/[\{\}]/g, "").replace(/^\n+/gm, "\n").replace(/(^.[^\:\n]*$)\n*/gm, "$1").replace(/\[\n+/g, "[").replace(/\n+\]/g, "]");
+      hover.contents.push(documentation);
+      return hover;
+    } else if (this.isTagStart()) {
+      let tagVal = Tags[tag];
+      let desc = tagVal.description || tagVal.desc || "";
+      hover.contents.push(desc);
+      return hover;
+    }
+  }
 };
 function toDash(str) {
   return str.replace(/(?<=.)([A-Z])/g, "-$1").toLowerCase();
@@ -4712,11 +4756,12 @@ function activate(context) {
   ];
   let triggerCharacters = ["", " ", ":", "<", '"', "'", "/", "@", "("];
   let completion = vscode.languages.registerCompletionItemProvider(selector, completionItemProvider, ...triggerCharacters);
+  let hoverhint = vscode.languages.registerHoverProvider(selector, completionItemProvider);
   let vueLanguageConfig = vscode.languages.setLanguageConfiguration("vue", { wordPattern: app.WORD_REG });
   let helloWorld = vscode.commands.registerCommand("cc-hint.helloWorld", () => {
     vscode.window.showInformationMessage("cc-hint is really useful");
   });
-  context.subscriptions.push(app, helloWorld, completion, vueLanguageConfig);
+  context.subscriptions.push(app, helloWorld, completion, hoverhint, vueLanguageConfig);
 }
 function deactivate() {
 }

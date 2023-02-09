@@ -40,6 +40,7 @@ export function activate(context: vscode.ExtensionContext) {
     ];
     let triggerCharacters = ["", " ", ":", "<", '"', "'", "/", "@", "(",];
     let completion = vscode.languages.registerCompletionItemProvider(selector, completionItemProvider, ...triggerCharacters);
+    let hoverhint = vscode.languages.registerHoverProvider(selector, completionItemProvider);
 
     // 设置vue中的word pattern
     let vueLanguageConfig = vscode.languages.setLanguageConfiguration("vue", { wordPattern: app.WORD_REG });
@@ -72,7 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.showInformationMessage("cc-hint is really useful");
     });
     // context.subscriptions.push(app, helloWorld, quickFindAntdv, completion, vueLanguageConfig);
-    context.subscriptions.push(app, helloWorld, completion, vueLanguageConfig);
+    context.subscriptions.push(app, helloWorld, completion, hoverhint, vueLanguageConfig);
 }
 
 

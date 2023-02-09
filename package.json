@@ -68,7 +68,8 @@
     "scripts": {
         "vscode:prepublish": "pnpm build",
         "build": "tsup",
-        "dev": "tsup --watch src",
+        "dev": "tsup",
+        "dev2": "tsup --watch src",
         "package": "vsce package --no-dependencies",
         "publish": "vsce publish --no-dependencies",
         "tscwatch": "tsc -watch -p ./",

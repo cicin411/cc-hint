@@ -22,6 +22,7 @@ import {
     CancellationToken,
     workspace,
     CompletionItemProvider,
+    HoverProvider,
     ProviderResult,
     TextDocument,
     Position,
@@ -31,6 +32,7 @@ import {
     SnippetString,
     Range,
     EventEmitter,
+    Hover
 } from "vscode";
 // import * as TAGS from "./config/ui-tags.json";
 // import ATTRS from "./config/ui-attributes.js";
@@ -266,13 +268,16 @@ export class AntdvDocsContentProvider implements TextDocumentContentProvider {
     }
 }
 
-export class AllCompletionItemProvider implements CompletionItemProvider {
+export class AllCompletionItemProvider implements CompletionItemProvider, HoverProvider {
+
     private _document: TextDocument;
     private _position: Position;
     // 含左tag段  eg <a-button-fuck
-    private tagReg: RegExp = /<([\w-]+)\s+/g;
+    private tagReg: RegExp = /<([-\w一-龟]+)\s+/g;
+    private inTagReg: RegExp = /<([-\w一-龟]+)\s+/g;
     // eg (aaa bbb ccc="aaa" 的 ccc以右部分
-    private attrReg: RegExp = /(?:\(|\s*)(\w+)=['"][^'"]*/;
+    private attrReg: RegExp = /(?:\(|\s*)([-\w一-龟]+)=['"][^'"]*/;
+    private inAttrReg: RegExp = /[-\w一-龟]+(=['"][^'"=\<\>]*|=[^'"\s]*)?$/;   // 处于attr所在领域, 可能有或者无=
     // <tag 直接到行结束
     private tagStartReg: RegExp = /<([\w-]*)$/;
     private pugTagStartReg: RegExp = /^\s*[\w-]*$/;
@@ -285,6 +290,7 @@ export class AllCompletionItemProvider implements CompletionItemProvider {
         let tag: TagObject | string;
         let txt = this.getTextBeforePosition(this._position);
 
+        // 已经考虑到了可能会跨行的情况
         while (this._position.line - line < 10 && line >= 0) {
             if (line !== this._position.line) {
                 txt = this._document.lineAt(line).text;
@@ -298,6 +304,37 @@ export class AllCompletionItemProvider implements CompletionItemProvider {
         return;
     }
 
+    /** cc添加取得当前tag */
+    getThisTag(): string {
+        let line = this._position.line;
+        let tag: string;
+        let txt = this.getTextBeforePosition(this._position);
+
+        // 已经考虑到了可能会跨行的情况
+        while (this._position.line - line < 10 && line >= 0) {
+            if (line !== this._position.line) {
+                txt = this._document.lineAt(line).text;
+            }
+
+            tag = txt.match(/(?<=<)[-\w一-龟]*/).at(0);
+            if (tag && tag != "") return tag;
+            line--;
+        }
+        return;
+    }
+
+    /** 取得当前的attr,注意这里面没有跨行的情况, 逻辑 attr = left + right */
+    getThisAttr(): string | undefined {
+        let text = this.getTextBeforePosition(this._position).match(this.inAttrReg)?.at(0); // 把最后一个等号也待着吧用于下一步判断,以及考虑中文变量
+        let right = text?.includes("=") ? "" : (this._document.getText(new Range(this._position, new Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "");
+        let left = text?.replace(/=.*$/, "");
+        // let text = this._document.getText(this._document.getWordRangeAtPosition(this._position, /[\w-]/));  // 据说这个在有复杂reg的时候相对低调,先这样吧,用自己的方式实现,我不知道这个背后的算法
+        return left + right;
+    }
+
+
+
+    /** 取得前面的attr,注意这里面没有跨行的情况 */
     getPreAttr(): string | undefined {
         let txt = this.getTextBeforePosition(this._position).replace(/"[^'"]*(\s*)[^'"]*$/, "");
         let end = this._position.character;
@@ -307,6 +344,7 @@ export class AllCompletionItemProvider implements CompletionItemProvider {
         return this.matchAttr(this.attrReg, parsedTxt);
     }
 
+    /** 正规化attr的匹配部分 */
     matchAttr(reg: RegExp, txt: string): string {
         let match: RegExpExecArray;
         match = reg.exec(txt);
@@ -330,7 +368,7 @@ export class AllCompletionItemProvider implements CompletionItemProvider {
         return arr.pop();
     }
 
-    /** 同一行范围 */
+    /** 同一行范围,前面的文本 */
     getTextBeforePosition(position: Position): string {
         var start = new Position(position.line, 0);
         var range = new Range(start, position);
@@ -536,6 +574,54 @@ export class AllCompletionItemProvider implements CompletionItemProvider {
             return [];
         }
     }
+
+    // hover要求的函数
+    provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
+        let hover = new Hover("ggggggg");
+
+
+        this._document = document;
+        this._position = position;
+
+        const config = workspace.getConfiguration("CC-Hint");
+        this.size = 4;
+        const normalQuotes = '"';
+        // this.size = config.get("indent-size");
+        // const normalQuotes = config.get("quotes") === "double" ? '"' : "'";
+        this.quotes = normalQuotes;
+
+
+        // getthistag todo
+        let tag: TagObject | string | undefined = this.getThisTag();
+
+        // 取得当前位置的tag
+        let attr = this.getThisAttr();
+
+        
+        // tofix as any
+        if (this.isAttrValueStart(tag, attr) || this.isAttrStart(tag as any)) {
+
+            let documentation = JSON.stringify(this.getAttrItem(tag, attr) ?? "", null, "\n")
+                .replace(/[\{\}]/g, "")
+                .replace(/^\n+/gm, "\n")
+                .replace(/(^.[^\:\n]*$)\n*/gm, "$1")  // 消除没有:的换行,主要是[]带来的换行
+                .replace(/\[\n+/g, "[").replace(/\n+\]/g, "]");
+
+            hover.contents.push(documentation);
+            return hover;
+        }
+        else if (this.isTagStart()) {
+            //  tofix
+            let tagVal = Tags[tag];
+            let desc = tagVal.description || tagVal.desc || "";
+            hover.contents.push(desc);
+            return hover;
+        }
+
+
+    }
+
+
 
 }
 
