@@ -6,6 +6,10 @@ todo:
 - devui/elementplus
 - react/others 
 
+
+v0.4.0  2023-2-10
+[~] 重构插件判断逻辑
+
 v0.3.0  2023-2-6
 [~]优化了readme
 [~]优化了部分插件说明

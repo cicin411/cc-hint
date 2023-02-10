@@ -2,7 +2,7 @@
     "name": "cc-hint",
     "displayName": "cc-hint",
     "description": "all hint in one for vue/react/others...",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "engines": {
         "vscode": ">=1.75.0"
     },
