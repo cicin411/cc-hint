@@ -3,7 +3,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
-import { App, AntdvDocsContentProvider, AllCompletionItemProvider } from "./app.js";
+import { App, AllItemProvider } from "./app.js";
 
 // 下面的这个原版的antd-helper基本没有什么用直接弃用吧
 // import COMPONENTS from "./config/components.js";
@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // let docs = new AntdvDocsContentProvider();
     // let = vscode.workspace.registerTextDocumentContentProvider("antdv-helper", docs);
-    let completionItemProvider = new AllCompletionItemProvider();
+    let completionItemProvider = new AllItemProvider();
 
     let selector = [
         { language: "vue", scheme: "file" },

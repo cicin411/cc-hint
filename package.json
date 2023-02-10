@@ -31,7 +31,7 @@
         ],
         "configuration": [
             {
-                "title": "CC-Hint",
+                "title": "cc-hint",
                 "properties": {
                     "cc-hint.jsonsetting": {
                         "type": "array",

@@ -4488,80 +4488,90 @@ var App = class {
     </html>`;
   }
 };
-var AllCompletionItemProvider = class {
+var AllItemProvider = class {
   _document;
   _position;
-  tagReg = /<([-\w一-龟]+)\s+/g;
-  inTagReg = /<([-\w一-龟]+)\s+/g;
+  tagReg = /(?<=(<.*> *)*)<([-\w一-龟]*)(\s*[^<]*)$/;
+  inTagReg = /(?<=(<.*> *)*)<([-\w一-龟]+)\s+[^<]*$/;
+  atTagReg = /(?<=(<.*> *)*)<[-\w一-龟]*$/;
   attrReg = /(?:\(|\s*)([-\w一-龟]+)=['"][^'"]*/;
-  inAttrReg = /[-\w一-龟]+(=['"][^'"=\<\>]*|=[^'"\s]*)?$/;
-  tagStartReg = /<([\w-]*)$/;
+  inAttrReg = /(?<=\s+)([-\w一-龟]+)(=['"][^'"=\<\>]*|=[^'" ]*)?$/;
+  tagStartReg = /<([-\w一-龟]*)$/;
   pugTagStartReg = /^\s*[\w-]*$/;
   size;
   quotes;
+  inputLocation = "noTag";
+  hoverLocation = "noTag";
   getPreTag() {
+    this.inputLocation = "noTag";
     let line = this._position.line;
     let tag;
-    let txt = this.getTextBeforePosition(this._position);
+    let text = this.getTextBeforePosition(this._position);
     while (this._position.line - line < 10 && line >= 0) {
       if (line !== this._position.line) {
-        txt = this._document.lineAt(line).text;
+        text = this._document.lineAt(line).text;
       }
-      tag = this.matchTag(this.tagReg, txt, line);
-      if (tag === "break")
-        return;
-      if (tag)
-        return tag;
+      let tag2 = text.match(this.tagReg);
+      if (tag2 && tag2[3] === "") {
+        this.inputLocation = "atTag";
+        return tag2[2];
+      } else if (tag2) {
+        this.inputLocation = "inTag";
+        return tag2[2];
+      }
       line--;
     }
-    return;
+    return null;
   }
   getThisTag() {
+    this.hoverLocation = "noTag";
     let line = this._position.line;
     let tag;
-    let txt = this.getTextBeforePosition(this._position);
+    let text = this.getTextBeforePosition(this._position);
     while (this._position.line - line < 10 && line >= 0) {
-      if (line !== this._position.line) {
-        txt = this._document.lineAt(line).text;
+      if (line !== this._position.line)
+        text = this._document.lineAt(line).text;
+      let tag2 = text.match(this.tagReg);
+      if (tag2 && tag2[3] === "") {
+        this.hoverLocation = "atTag";
+        let tag_right = this._document.getText(new import_vscode.Range(this._position, new import_vscode.Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "";
+        return tag2[2] + tag_right;
+      } else if (tag2) {
+        this.hoverLocation = "inTag";
+        return tag2[2];
       }
-      tag = txt.match(/(?<=<)[-\w一-龟]*/).at(0);
-      if (tag && tag != "")
-        return tag;
       line--;
     }
-    return;
+    return null;
   }
   getThisAttr() {
-    let text = this.getTextBeforePosition(this._position).match(this.inAttrReg)?.at(0);
-    let right = text?.includes("=") ? "" : this._document.getText(new import_vscode.Range(this._position, new import_vscode.Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "";
-    let left = text?.replace(/=.*$/, "");
-    return left + right;
+    let attr = this.getTextBeforePosition(this._position).match(this.inAttrReg);
+    if (!attr)
+      return "";
+    let right = "";
+    if (attr[2] != "") {
+      this.hoverLocation = "atAttrValue";
+      right = this._document.getText(new import_vscode.Range(this._position, new import_vscode.Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "";
+    } else if (attr[1] != "") {
+      this.hoverLocation = "atAttr";
+    }
+    return attr[1] + right;
   }
   getPreAttr() {
-    let txt = this.getTextBeforePosition(this._position).replace(/"[^'"]*(\s*)[^'"]*$/, "");
-    let end = this._position.character;
-    let start = txt.lastIndexOf(" ", end) + 1;
-    let parsedTxt = this._document.getText(new import_vscode.Range(this._position.line, start, this._position.line, end));
-    return this.matchAttr(this.attrReg, parsedTxt);
+    let attr = this.getTextBeforePosition(this._position).match(this.inAttrReg);
+    if (!attr)
+      return "";
+    if (attr[2] != "") {
+      this.inputLocation = "atAttrValue";
+    } else if (attr[1] != "") {
+      this.inputLocation = "atAttr";
+    }
+    return attr[1];
   }
   matchAttr(reg, txt) {
     let match;
     match = reg.exec(txt);
     return !/"[^"]*"/.test(txt) && match && match[1];
-  }
-  matchTag(reg, txt, line) {
-    let match;
-    let arr = [];
-    if (/<\/?[-\w]+[^<>]*>[\s\w]*<?\s*[\w-]*$/.test(txt) || this._position.line === line && (/^\s*[^<]+\s*>[^<\/>]*$/.test(txt) || /[^<>]*<$/.test(txt[txt.length - 1]))) {
-      return "break";
-    }
-    while (match = reg.exec(txt)) {
-      arr.push({
-        text: match[1],
-        offset: this._document.offsetAt(new import_vscode.Position(line, match.index))
-      });
-    }
-    return arr.pop();
   }
   getTextBeforePosition(position) {
     var start = new import_vscode.Position(position.line, 0);
@@ -4570,6 +4580,7 @@ var AllCompletionItemProvider = class {
   }
   getTagSuggestion() {
     let suggestions = [];
+    console.log("ccc_tagslist", Tags);
     let id = 100;
     for (let tag in Tags) {
       suggestions.push(this.buildTagSuggestion(tag, Tags[tag], id));
@@ -4628,7 +4639,7 @@ var AllCompletionItemProvider = class {
       sortText: `0${id}${tag}`,
       insertText: new import_vscode.SnippetString((0, import_pretty.default)("<" + snippets.join(""), { indent_size: this.size }).substr(1)),
       kind: import_vscode.CompletionItemKind.Snippet,
-      detail: "CC-Hint",
+      detail: "cc-hint",
       documentation: tagVal.description || tagVal.desc
     };
   }
@@ -4642,7 +4653,7 @@ var AllCompletionItemProvider = class {
         label: { label: attr, detail: label_suf, description: label_sum },
         insertText: attrItem.type && type === "flag" ? `${attr} ` : new import_vscode.SnippetString(`${attr}=${this.quotes}$1${this.quotes}$0`),
         kind: type && type === "method" ? import_vscode.CompletionItemKind.Method : import_vscode.CompletionItemKind.Property,
-        detail: "CC-Hint",
+        detail: "cc-hint",
         documentation
       };
     } else {
@@ -4665,16 +4676,6 @@ var AllCompletionItemProvider = class {
   getAttrItem(tag, attr) {
     return (Tags[tag]?.props || Tags[tag]?.Props)[attr];
   }
-  isAttrValueStart(tag, attr) {
-    return tag && attr;
-  }
-  isAttrStart(tag) {
-    return tag;
-  }
-  isTagStart() {
-    let txt = this.getTextBeforePosition(this._position);
-    return this.tagStartReg.test(txt);
-  }
   firstCharsEqual(str1, str2) {
     if (str2 && str1) {
       return str1[0].toLowerCase() === str2[0].toLowerCase();
@@ -4694,45 +4695,53 @@ var AllCompletionItemProvider = class {
   provideCompletionItems(document, position, token) {
     this._document = document;
     this._position = position;
-    const config = import_vscode.workspace.getConfiguration("CC-Hint");
+    const config = import_vscode.workspace.getConfiguration("cc-hint");
     this.size = 4;
     const normalQuotes = '"';
     this.quotes = normalQuotes;
     let tag = this.getPreTag();
-    let attr = this.getPreAttr();
-    if (this.isAttrValueStart(tag, attr)) {
-      return this.getAttrValueSuggestion(tag.text, attr);
-    } else if (this.isAttrStart(tag)) {
-      return this.getAttrSuggestion(tag.text);
-    } else if (this.isTagStart()) {
+    let attr;
+    console.log("ccc_tag", tag);
+    if (this.inputLocation === "inTag") {
+      attr = this.getPreAttr();
+      console.log("ccc_attr", attr);
+    }
+    if (this.inputLocation === "atTag") {
+      console.log("ccc_attag", tag);
       switch (document.languageId) {
         case "vue":
           return this.notInTemplate() ? [] : this.getTagSuggestion();
         case "html":
           return this.getTagSuggestion();
       }
+    } else if (this.inputLocation === "inTag" || this.inputLocation === "atAttr") {
+      return this.getAttrSuggestion(tag);
+    } else if (this.inputLocation === "atAttrValue") {
+      return this.getAttrValueSuggestion(tag, attr);
     } else {
       return [];
     }
   }
   provideHover(document, position, token) {
-    let hover = new import_vscode.Hover("ggggggg");
+    let hover = new import_vscode.Hover("cc-hover-hint");
     this._document = document;
     this._position = position;
-    const config = import_vscode.workspace.getConfiguration("CC-Hint");
+    const config = import_vscode.workspace.getConfiguration("cc-hint");
     this.size = 4;
     const normalQuotes = '"';
     this.quotes = normalQuotes;
     let tag = this.getThisTag();
-    let attr = this.getThisAttr();
-    if (this.isAttrValueStart(tag, attr) || this.isAttrStart(tag)) {
-      let documentation = JSON.stringify(this.getAttrItem(tag, attr) ?? "", null, "\n").replace(/[\{\}]/g, "").replace(/^\n+/gm, "\n").replace(/(^.[^\:\n]*$)\n*/gm, "$1").replace(/\[\n+/g, "[").replace(/\n+\]/g, "]");
-      hover.contents.push(documentation);
-      return hover;
-    } else if (this.isTagStart()) {
+    let attr;
+    if (tag)
+      attr = this.getThisAttr();
+    if (this.hoverLocation === "atTag") {
       let tagVal = Tags[tag];
       let desc = tagVal.description || tagVal.desc || "";
       hover.contents.push(desc);
+      return hover;
+    } else if (this.hoverLocation === "atAttr" || this.hoverLocation === "atAttrValue") {
+      let documentation = JSON.stringify(this.getAttrItem(tag, attr) ?? "", null, "\n").replace(/[\{\}]/g, "").replace(/^\n+/gm, "\n").replace(/(^.[^\:\n]*$)\n*/gm, "$1").replace(/\[\n+/g, "[").replace(/\n+\]/g, "]");
+      hover.contents.push(documentation);
       return hover;
     }
   }
@@ -4747,7 +4756,7 @@ function activate(context) {
     return;
   let app = new App();
   app.setConfig();
-  let completionItemProvider = new AllCompletionItemProvider();
+  let completionItemProvider = new AllItemProvider();
   let selector = [
     { language: "vue", scheme: "file" },
     { language: "html", scheme: "file" },
@@ -4757,10 +4766,12 @@ function activate(context) {
   let triggerCharacters = ["", " ", ":", "<", '"', "'", "/", "@", "("];
   let completion = vscode.languages.registerCompletionItemProvider(selector, completionItemProvider, ...triggerCharacters);
   let hoverhint = vscode.languages.registerHoverProvider(selector, completionItemProvider);
+  let hoverhint = vscode.languages.registerHoverProvider(selector, completionItemProvider);
   let vueLanguageConfig = vscode.languages.setLanguageConfiguration("vue", { wordPattern: app.WORD_REG });
   let helloWorld = vscode.commands.registerCommand("cc-hint.helloWorld", () => {
     vscode.window.showInformationMessage("cc-hint is really useful");
   });
+  context.subscriptions.push(app, helloWorld, completion, hoverhint, vueLanguageConfig);
   context.subscriptions.push(app, helloWorld, completion, hoverhint, vueLanguageConfig);
 }
 function deactivate() {

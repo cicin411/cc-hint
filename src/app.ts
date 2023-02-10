@@ -1,13 +1,15 @@
 "use strict";
 // 注意这里面的名词解释
-// tag和attr:   <a-button-tag  style-atrribute="">
+// tag和attr:   <a-button-tag  style-attribute="">
 // tag段  <全tag含符号>
 // tag左段  <tag的左半段,不含有右边尖括号
 // tag/tag名称  <tag>
-// tag符号 <>
-// attr有value和name,没有名称就是指value
+// attr有value和name,默认不带value就是指name
 // 注意json格式,props在第二次,第一次是tag名称
 // {tag:{props:xxx,里面可以穿插其他内容}}——会自动把没有props名称直接把值放在第一层/第一层有props属性名/第二层存在props属性名称的统一起来
+
+// 注意如下区域定义  inAttr = atAttr + atAttrValue + =""等位置 tagReg=at+in
+// <atTag inTag atAttr="atAttrValue" inTag> underTag   </>
 
 import * as vs from "vscode";
 import * as path from "path";
@@ -23,6 +25,7 @@ import {
     workspace,
     CompletionItemProvider,
     HoverProvider,
+    HoverProvider,
     ProviderResult,
     TextDocument,
     Position,
@@ -32,6 +35,7 @@ import {
     SnippetString,
     Range,
     EventEmitter,
+    Hover
     Hover
 } from "vscode";
 // import * as TAGS from "./config/ui-tags.json";
@@ -61,10 +65,7 @@ type labelSet = {
 let jsonsets: JsonSet[] = vs.workspace.getConfiguration("cc-hint").get("jsonsetting") as any[];
 let labelsets: labelSet = vs.workspace.getConfiguration("cc-hint").get("labelsetting");
 
-
-
-
-
+// 最终生成的是一个tag-obj,里面有各种attr属性,props是其中之一,层次是 Tags.tag.attr
 let Tags = getJsons();
 
 
@@ -87,7 +88,6 @@ function getAllFilesFromPath(dir: string, types?: string | string[]) {
     let files = {}; // 内容
     let filelist: any[] = []; // 
     let names: any[];
-
 
     try {
         names = fs.readdirSync(dir);  // 返回文件列表
@@ -125,29 +125,6 @@ function getAllFilesFromPath(dir: string, types?: string | string[]) {
     });
 
     return files;
-
-}
-
-/** 使用上面的递归的这个已经弃用,取得path下面的所有type文件内容,注意内容类型得在ts中有定义,比如json、ts等等,暂时只处理一层吧 */
-function getFilesFromPath(dir: string, types?: string | string[]) {
-    types = [].concat(types);
-    let files = {};
-    let names: any[];
-
-
-    // 动态import导入容易出问题let js = await import(fullPath + ".json")还是使用fs的吧
-    try {
-        names = fs.readdirSync(dir).filter(x => types.includes(path.extname(x).replace(".", "")));  // 返回文件列表
-    } catch {
-        return null;   // 注意发生错误取不到数据的话直接返回
-    }
-
-    names.forEach(name => {
-        let file = JSON.parse(fs.readFileSync(path.resolve(dir, name)).toString());
-        files = { ...files, ...file };
-    });
-    return files;
-
 }
 
 export interface Query {
@@ -170,6 +147,7 @@ export function decodeDocsUri(uri: Uri): Query {
     return <Query>JSON.parse(uri.query);
 }
 
+//  主要为了quickfind,没啥用,可以删除,保留为了以后学习用
 export class App {
     private _disposable!: Disposable;
     public WORD_REG: RegExp = /(-?\d*\.\d\w*)|([^\`\~\!\@\$\^\&\*\(\)\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\s]+)/gi;
@@ -177,16 +155,13 @@ export class App {
     getSeletedText() {
         let editor = window.activeTextEditor;
 
-        if (!editor) {
-            return;
-        }
+        if (!editor) { return; }
 
         let selection = editor.selection;
 
         if (selection.isEmpty) {
             let text = [];
             let range = editor.document.getWordRangeAtPosition(selection.start, this.WORD_REG);
-
             return editor.document.getText(range);
         } else {
             return editor.document.getText(selection);
@@ -252,121 +227,155 @@ const HTML_CONTENT = (query: Query) => {
     </body>`;
 };
 
-export class AntdvDocsContentProvider implements TextDocumentContentProvider {
-    private _onDidChange = new EventEmitter<Uri>();
-
-    get onDidChange(): Event<Uri> {
-        return this._onDidChange.event;
-    }
-
-    public update(uri: Uri) {
-        this._onDidChange.fire(uri);
-    }
-
-    provideTextDocumentContent(uri: Uri, token: CancellationToken): string | Thenable<string> {
-        return HTML_CONTENT(decodeDocsUri(uri));
-    }
-}
-
-export class AllCompletionItemProvider implements CompletionItemProvider, HoverProvider {
+// provide compeletion items and hover hint
+export class AllItemProvider implements CompletionItemProvider, HoverProvider {
 
     private _document: TextDocument;
     private _position: Position;
-    // 含左tag段  eg <a-button-fuck
-    private tagReg: RegExp = /<([-\w一-龟]+)\s+/g;
-    private inTagReg: RegExp = /<([-\w一-龟]+)\s+/g;
+    /** 含左tag段  [0] ➔ all_result [1] ➔ 不捕获  [2] ➔ tag_name [3] ➔ in_tag_content */
+    private tagReg: RegExp = /(?<=(<.*> *)*)<([-\w一-龟]*)(\s*[^<]*)$/;
+    // notice inTag and underTag
+    private inTagReg: RegExp = /(?<=(<.*> *)*)<([-\w一-龟]+)\s+[^<]*$/;
+    // 注意没有全局标志，可以提取到tag
+    private atTagReg: RegExp = /(?<=(<.*> *)*)<[-\w一-龟]*$/;
     // eg (aaa bbb ccc="aaa" 的 ccc以右部分
     private attrReg: RegExp = /(?:\(|\s*)([-\w一-龟]+)=['"][^'"]*/;
-    private inAttrReg: RegExp = /[-\w一-龟]+(=['"][^'"=\<\>]*|=[^'"\s]*)?$/;   // 处于attr所在领域, 可能有或者无=
+    /** 处于attr所在领域, 如果含最后一个'"则不匹配,[0] ➔ all_result  [1] ➔ attr_name [2] ➔ ="in_attr_content" */
+    private inAttrReg: RegExp = /(?<=\s+)([-\w一-龟]+)(=['"][^'"=\<\>]*|=[^'" ]*)?$/;
     // <tag 直接到行结束
-    private tagStartReg: RegExp = /<([\w-]*)$/;
+    private tagStartReg: RegExp = /<([-\w一-龟]*)$/;
     private pugTagStartReg: RegExp = /^\s*[\w-]*$/;
     private size: number;
     private quotes: string;
 
-    /** 取得前面的tag */
-    getPreTag(): TagObject | undefined {
-        let line = this._position.line;
-        let tag: TagObject | string;
-        let txt = this.getTextBeforePosition(this._position);
+    // getTag/attr的时候会修改这个值,通过这个值判断suggetion以及hint时候的具体位置——原思路优化一下,避免重复运行匹配
+    private inputLocation: "atTag" | "inTag" | "underTag" | "atAttr" | "inAttr" | "atAttrValue" | "noTag" = "noTag";
+    private hoverLocation: "atTag" | "inTag" | "underTag" | "atAttr" | "inAttr" | "atAttrValue" | "noTag" = "noTag";
 
-        // 已经考虑到了可能会跨行的情况
-        while (this._position.line - line < 10 && line >= 0) {
-            if (line !== this._position.line) {
-                txt = this._document.lineAt(line).text;
-            }
-            tag = this.matchTag(this.tagReg, txt, line);
+    /** 取得前面的tag,如果在tag文字内,截取tagleft,如果在tag标签内 */
+    getPreTag(): string {
+        this.inputLocation = "noTag";
 
-            if (tag === "break") return;
-            if (tag) return <TagObject>tag;
-            line--;
-        }
-        return;
-    }
-
-    /** cc添加取得当前tag */
-    getThisTag(): string {
         let line = this._position.line;
         let tag: string;
-        let txt = this.getTextBeforePosition(this._position);
+        let text = this.getTextBeforePosition(this._position);
 
+        // 已经考虑到了可能会跨行的情况
         // 已经考虑到了可能会跨行的情况
         while (this._position.line - line < 10 && line >= 0) {
             if (line !== this._position.line) {
-                txt = this._document.lineAt(line).text;
+                text = this._document.lineAt(line).text;
             }
 
-            tag = txt.match(/(?<=<)[-\w一-龟]*/).at(0);
-            if (tag && tag != "") return tag;
+            let tag = text.match(this.tagReg);
+
+            // 注意match[0]只要不是null, group时候没有匹配实际返回 ➔ 空字符串""
+            if (tag && tag[3] === "") {
+                this.inputLocation = "atTag";
+                return tag[2];
+            }
+            else if (tag) {
+                this.inputLocation = "inTag";
+                return tag[2];
+            }
+
             line--;
         }
-        return;
+        return null;
+    }
+
+    /** if atTag get it, else not */
+    getThisTag(): string {
+        this.hoverLocation = "noTag";
+
+
+        let line = this._position.line;
+        let tag: string;
+        let text = this.getTextBeforePosition(this._position);
+
+        // 已经考虑到了可能会跨行的情况
+        while (this._position.line - line < 10 && line >= 0) {
+            if (line !== this._position.line) text = this._document.lineAt(line).text;
+
+            let tag = text.match(this.tagReg);
+
+            // 注意match[0]只要不是null, group时候没有匹配实际返回 ➔ 空字符串""
+            if (tag && tag[3] === "") {
+                this.hoverLocation = "atTag";
+                let tag_right = this._document.getText(new Range(this._position, new Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "";
+                return tag[2] + tag_right;
+            }
+            else if (tag) {
+                this.hoverLocation = "inTag";
+                return tag[2];
+            }
+            line--;
+        }
+        return null;
+
+        // let line = this._position.line;
+        // let tag: string;
+        // let txt = this.getTextBeforePosition(this._position);
+
+        // // 已经考虑到了可能会跨行的情况,目前设置就是10行,可以设置更多但可能没有必要
+        // while (this._position.line - line < 10 && line >= 0) {
+        //     if (line !== this._position.line) {
+        //         txt = this._document.lineAt(line).text;
+        //     }
+
+        //     tag = txt.match(/(?<=<)[-\w一-龟]*/)?.at(0);
+        //     if (tag && tag != "") return tag;
+        //     line--;
+        // }
+        // return;
+    }
+
+    /** 取得当前的attr,注意这里面没有跨行的情况, 逻辑 attrname = left + right, cause of cursor splitting */
+    getThisAttr(): string | undefined {
+        // 把最后一个等号也待着吧用于下一步判断,以及考虑中文变量
+        let attr = this.getTextBeforePosition(this._position).match(this.inAttrReg);
+        if (!attr) return "";
+        let right = "";
+
+        if (attr[2] != "") {
+            this.hoverLocation = "atAttrValue";
+            right = this._document.getText(new Range(this._position, new Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "";
+        }
+        else if (attr[1] != "") {
+            this.hoverLocation = "atAttr";
+        }
+
+
+        // let left = attr?.replace(/=.*$/, "");
+        return attr[1] + right;
     }
 
     /** 取得当前的attr,注意这里面没有跨行的情况, 逻辑 attr = left + right */
-    getThisAttr(): string | undefined {
-        let text = this.getTextBeforePosition(this._position).match(this.inAttrReg)?.at(0); // 把最后一个等号也待着吧用于下一步判断,以及考虑中文变量
-        let right = text?.includes("=") ? "" : (this._document.getText(new Range(this._position, new Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "");
-        let left = text?.replace(/=.*$/, "");
-        // let text = this._document.getText(this._document.getWordRangeAtPosition(this._position, /[\w-]/));  // 据说这个在有复杂reg的时候相对低调,先这样吧,用自己的方式实现,我不知道这个背后的算法
-        return left + right;
+    getPreAttr(): string {
+        // 把最后一个等号也待着吧用于下一步判断,以及考虑中文变量
+        let attr = this.getTextBeforePosition(this._position).match(this.inAttrReg);
+        // let right = text?.includes("=") ? "" : (this._document.getText(new Range(this._position, new Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "");
+
+        if (!attr) return "";
+
+        if (attr[2] != "") {
+            this.inputLocation = "atAttrValue";
+        }
+        else if (attr[1] != "") {
+            this.inputLocation = "atAttr";
+        }
+
+        return attr[1];
     }
 
 
-
-    /** 取得前面的attr,注意这里面没有跨行的情况 */
-    getPreAttr(): string | undefined {
-        let txt = this.getTextBeforePosition(this._position).replace(/"[^'"]*(\s*)[^'"]*$/, "");
-        let end = this._position.character;
-        let start = txt.lastIndexOf(" ", end) + 1;
-        let parsedTxt = this._document.getText(new Range(this._position.line, start, this._position.line, end));
-
-        return this.matchAttr(this.attrReg, parsedTxt);
-    }
-
-    /** 正规化attr的匹配部分 */
+    /** 取出attr的匹配部分 */
     matchAttr(reg: RegExp, txt: string): string {
         let match: RegExpExecArray;
         match = reg.exec(txt);
         return !/"[^"]*"/.test(txt) && match && match[1];
     }
 
-    matchTag(reg: RegExp, txt: string, line: number): TagObject | string {
-        let match: RegExpExecArray;
-        let arr: TagObject[] = [];
-
-        // eg 最后一个<标签><可能半个标签
-        if (/<\/?[-\w]+[^<>]*>[\s\w]*<?\s*[\w-]*$/.test(txt) || (this._position.line === line && (/^\s*[^<]+\s*>[^<\/>]*$/.test(txt) || /[^<>]*<$/.test(txt[txt.length - 1])))) {
-            return "break";
-        }
-        while ((match = reg.exec(txt))) {
-            arr.push({
-                text: match[1], // 只取出tag名
-                offset: this._document.offsetAt(new Position(line, match.index)),
-            });
-        }
-        return arr.pop();
-    }
 
     /** 同一行范围,前面的文本 */
     getTextBeforePosition(position: Position): string {
@@ -378,7 +387,7 @@ export class AllCompletionItemProvider implements CompletionItemProvider, HoverP
     /** 取得当前位置tag建议列表 */
     getTagSuggestion() {
         let suggestions = [];
-
+        console.log('ccc_tagslist', Tags);
         let id = 100;
         for (let tag in Tags) {
             suggestions.push(this.buildTagSuggestion(tag, Tags[tag], id));
@@ -454,7 +463,7 @@ export class AllCompletionItemProvider implements CompletionItemProvider, HoverP
             sortText: `0${id}${tag}`,
             insertText: new SnippetString(prettyHTML("<" + snippets.join(""), { indent_size: this.size }).substr(1)),
             kind: CompletionItemKind.Snippet,
-            detail: "CC-Hint",  // 副提示栏的大标题
+            detail: "cc-hint",  // 副提示栏的大标题
             documentation: tagVal.description || tagVal.desc,
         };
     }
@@ -481,7 +490,7 @@ export class AllCompletionItemProvider implements CompletionItemProvider, HoverP
                 label: { label: attr, detail: label_suf, description: label_sum },
                 insertText: attrItem.type && type === "flag" ? `${attr} ` : new SnippetString(`${attr}=${this.quotes}$1${this.quotes}$0`),
                 kind: type && type === "method" ? CompletionItemKind.Method : CompletionItemKind.Property,
-                detail: "CC-Hint",
+                detail: "cc-hint",
                 documentation,
             };
         } else {
@@ -502,27 +511,10 @@ export class AllCompletionItemProvider implements CompletionItemProvider, HoverP
 
     getTagAttrs(tag: string) {
         return Tags[tag]?.attributes || Object.keys(Tags[tag]?.props) || Object.keys(Tags[tag]?.Props) || [];
-
     }
 
     getAttrItem(tag: string | undefined, attr: string | undefined) {
-
         return (Tags[tag]?.props || Tags[tag]?.Props)[attr];
-
-        // return ATTRS[`${tag}/${attr}`] || ATTRS[attr];
-    }
-
-    isAttrValueStart(tag: Object | string | undefined, attr) {
-        return tag && attr;
-    }
-
-    isAttrStart(tag: TagObject | undefined) {
-        return tag;
-    }
-
-    isTagStart() {
-        let txt = this.getTextBeforePosition(this._position);
-        return this.tagStartReg.test(txt);
     }
 
     firstCharsEqual(str1: string, str2: string) {
@@ -547,43 +539,51 @@ export class AllCompletionItemProvider implements CompletionItemProvider, HoverP
         this._document = document;
         this._position = position;
 
-        const config = workspace.getConfiguration("CC-Hint");
+        const config = workspace.getConfiguration("cc-hint");
         this.size = 4;
         const normalQuotes = '"';
-        // this.size = config.get("indent-size");
-        // const normalQuotes = config.get("quotes") === "double" ? '"' : "'";
         this.quotes = normalQuotes;
 
-        let tag: TagObject | string | undefined = this.getPreTag();
+        let tag = this.getPreTag() as string;
+        let attr: string;
+        console.log('ccc_tag', tag);
 
-        // 取得当前位置的tag
-        let attr = this.getPreAttr();
-        if (this.isAttrValueStart(tag, attr)) {
-            return this.getAttrValueSuggestion(tag.text, attr);
-        } else if (this.isAttrStart(tag)) {
-            return this.getAttrSuggestion(tag.text);
-        } else if (this.isTagStart()) {
+        if (this.inputLocation === "inTag") {
+            attr = this.getPreAttr();
+            console.log('ccc_attr', attr);
+        }
+
+
+        if (this.inputLocation === "atTag") {
+            console.log('ccc_attag', tag);
             switch (document.languageId) {
                 case "vue":
                     return this.notInTemplate() ? [] : this.getTagSuggestion();
                 case "html":
-                    // todo
                     return this.getTagSuggestion();
             }
+        } else if (this.inputLocation === "inTag" || this.inputLocation === "atAttr") {
+            return this.getAttrSuggestion(tag);
+
+        } else if (this.inputLocation === "atAttrValue") {
+            return this.getAttrValueSuggestion(tag, attr);
+
         } else {
             return [];
         }
+
+
     }
 
     // hover要求的函数
     provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
-        let hover = new Hover("ggggggg");
+        let hover = new Hover("cc-hover-hint");
 
 
         this._document = document;
         this._position = position;
 
-        const config = workspace.getConfiguration("CC-Hint");
+        const config = workspace.getConfiguration("cc-hint");
         this.size = 4;
         const normalQuotes = '"';
         // this.size = config.get("indent-size");
@@ -591,16 +591,21 @@ export class AllCompletionItemProvider implements CompletionItemProvider, HoverP
         this.quotes = normalQuotes;
 
 
-        // getthistag todo
-        let tag: TagObject | string | undefined = this.getThisTag();
-
         // 取得当前位置的tag
-        let attr = this.getThisAttr();
+        let tag = this.getThisTag();
+        let attr: string;
+        // 取得当前位置的attr
+        if (tag) attr = this.getThisAttr();
 
-        
         // tofix as any
-        if (this.isAttrValueStart(tag, attr) || this.isAttrStart(tag as any)) {
-
+        if (this.hoverLocation === "atTag") {
+            //  tofix
+            let tagVal = Tags[tag];
+            let desc = tagVal.description || tagVal.desc || "";
+            hover.contents.push(desc);
+            return hover;
+        }
+        else if (this.hoverLocation === "atAttr" || this.hoverLocation === "atAttrValue") {
             let documentation = JSON.stringify(this.getAttrItem(tag, attr) ?? "", null, "\n")
                 .replace(/[\{\}]/g, "")
                 .replace(/^\n+/gm, "\n")
@@ -609,15 +614,8 @@ export class AllCompletionItemProvider implements CompletionItemProvider, HoverP
 
             hover.contents.push(documentation);
             return hover;
-        }
-        else if (this.isTagStart()) {
-            //  tofix
-            let tagVal = Tags[tag];
-            let desc = tagVal.description || tagVal.desc || "";
-            hover.contents.push(desc);
-            return hover;
-        }
 
+        }
 
     }
 
