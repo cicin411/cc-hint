@@ -25,7 +25,6 @@ import {
     workspace,
     CompletionItemProvider,
     HoverProvider,
-    HoverProvider,
     ProviderResult,
     TextDocument,
     Position,
@@ -35,7 +34,6 @@ import {
     SnippetString,
     Range,
     EventEmitter,
-    Hover
     Hover
 } from "vscode";
 // import * as TAGS from "./config/ui-tags.json";
