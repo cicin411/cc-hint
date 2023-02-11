@@ -8,7 +8,8 @@
 // 注意json格式,props在第二次,第一次是tag名称
 // {tag:{props:xxx,里面可以穿插其他内容}}——会自动把没有props名称直接把值放在第一层/第一层有props属性名/第二层存在props属性名称的统一起来
 
-// 注意如下区域定义  inAttr = atAttr + atAttrValue + =""等位置 tagReg=at+in
+// 注意如下区域定义  inAttr = atAttr + atAttrValue + =""等位置 
+// tagReg=at | in    attr = prop | event
 // <atTag inTag atAttr="atAttrValue" inTag> underTag   </>
 
 import * as vs from "vscode";
@@ -47,9 +48,6 @@ import * as fs from "fs";
 // 如果这个引用了就要打包进来
 import prettyHTML from "pretty";
 
-
-
-
 type JsonSet = {
     name: string;
     jsonpath: string;
@@ -60,11 +58,22 @@ type labelSet = {
     label_summary: string;
 };
 
+type TagObj = {
+    [tag: string]: {
+        "props"?: {},
+        "events"?: {},
+        "attributes"?: string[],  // 这个可以用于描述列表,不推荐使用
+        "description"?: string,  // 用于描述
+        "desc"?: string,  // 用于描述,是上面的简写
+    };
+};
+
+
 let jsonsets: JsonSet[] = vs.workspace.getConfiguration("cc-hint").get("jsonsetting") as any[];
 let labelsets: labelSet = vs.workspace.getConfiguration("cc-hint").get("labelsetting");
 
 // 最终生成的是一个tag-obj,里面有各种attr属性,props是其中之一,层次是 Tags.tag.attr
-let Tags = getJsons();
+let Tags: TagObj = getJsons();
 
 
 function getJsons() {
@@ -72,48 +81,54 @@ function getJsons() {
 
     for (let jset of jsonsets) {
         let dir = jset.jsonpath === "" ? path.join(__dirname, "./api/" + jset.name) : jset.jsonpath;
-        console.log('cccdir', dir);
         let json = getAllFilesFromPath(dir, "json");
         if (json != null) jsons = { ...jsons, ...json };
     }
+    console.log("ccc_json", jsons);
 
     return jsons;
 }
 
-// 穿透取得path下面的所有文件名称列表
+// 先穿透取得path下面的所有文件名称列表,再提取内容作为{}
 function getAllFilesFromPath(dir: string, types?: string | string[]) {
     types = [].concat(types);
-    let files = {}; // 内容
+    // path下汇总的内容
+    let files = {};
     let filelist: any[] = []; // 
     let names: any[];
 
     try {
-        names = fs.readdirSync(dir);  // 返回文件列表
+        // 返回文件列表
+        names = fs.readdirSync(dir);
     } catch { return null; }
 
+    // 递归找到下层的文件列表
     names.forEach((item, index) => {
         let fullPath = path.join(dir, item);
         let stat = fs.statSync(fullPath);
-        // 文件夹就当成处理
+        // 文件夹就递归处理
         if (stat.isDirectory()) {
             files = { ...files, ...getAllFilesFromPath(fullPath, types) };
         }
-        // 文件就filter一下type
+        // 文件就filter一下type再处理
         else if (types.includes(path.extname(item).replace(".", ""))) {
             filelist.push(fullPath);
         }
     });
 
+    // 处理成标准结构并汇总到一个{}
     filelist.forEach(x => {
+        // 一个文件就是一个{}
         let file: Object = JSON.parse(fs.readFileSync(path.resolve(x)).toString());
         let tag: string = toDash(path.basename(x, ".json"));
-        // tag在第一层这个属于标准结构
+
+        // 第一层是tagname——这个属于标准结构 {tag_name:{}}
         if (file.hasOwnProperty(tag)) { }
-        // 第一层就有props属性
-        else if (file.hasOwnProperty("props")) {
+        // 第一层发现props|events属性,{props:{propname:{}}}稍微处理一下得
+        else if (file.hasOwnProperty("props") || file.hasOwnProperty("events")) {
             file = { [tag]: file };
         }
-        // 这种属于无props属性,直接把值放在第一层
+        // 第一层就是props_name, 使用文件名作为tagname
         else {
             let tag: string = toDash(path.basename(x, ".json"));
             file = { [tag]: { props: file } };
@@ -239,16 +254,18 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
     // eg (aaa bbb ccc="aaa" 的 ccc以右部分
     private attrReg: RegExp = /(?:\(|\s*)([-\w一-龟]+)=['"][^'"]*/;
     /** 处于attr所在领域, 如果含最后一个'"则不匹配,[0] ➔ all_result  [1] ➔ attr_name [2] ➔ ="in_attr_content" */
-    private inAttrReg: RegExp = /(?<=\s+)([-\w一-龟]+)(=['"][^'"=\<\>]*|=[^'" ]*)?$/;
+    private inAttrReg: RegExp = /(?<=\s+)(?<suf>@|v-on:|v-model:|:)*(?<name>[-\w一-龟]*)(?<value>=['"][^'"=\<\>]*|=[^'" ]*)?$/;
+    // private inAttrReg: RegExp = /(?<=\s+)([-\w一-龟]+)(=['"][^'"=\<\>]*|=[^'" ]*)?$/;
     // <tag 直接到行结束
     private tagStartReg: RegExp = /<([-\w一-龟]*)$/;
     private pugTagStartReg: RegExp = /^\s*[\w-]*$/;
     private size: number;
     private quotes: string;
 
-    // getTag/attr的时候会修改这个值,通过这个值判断suggetion以及hint时候的具体位置——原思路优化一下,避免重复运行匹配
-    private inputLocation: "atTag" | "inTag" | "underTag" | "atAttr" | "inAttr" | "atAttrValue" | "noTag" = "noTag";
-    private hoverLocation: "atTag" | "inTag" | "underTag" | "atAttr" | "inAttr" | "atAttrValue" | "noTag" = "noTag";
+
+    // getTag/attr的时候会修改这个值,通过这个值判断suggetion以及hint时候的具体位置——原思路优化,避免重复运行匹配
+    private inputLocation: "atTag" | "inTag" | "underTag" | "atAttr" | "inAttr" | "atAttrValue" | "atEvent" | "noTag" = "noTag";
+    private hoverLocation: "atTag" | "inTag" | "underTag" | "atAttr" | "inAttr" | "atAttrValue" | "atEvent" | "noTag" = "noTag";
 
     /** 取得前面的tag,如果在tag文字内,截取tagleft,如果在tag标签内 */
     getPreTag(): string {
@@ -258,7 +275,6 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
         let tag: string;
         let text = this.getTextBeforePosition(this._position);
 
-        // 已经考虑到了可能会跨行的情况
         // 已经考虑到了可能会跨行的情况
         while (this._position.line - line < 10 && line >= 0) {
             if (line !== this._position.line) {
@@ -310,22 +326,6 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
             line--;
         }
         return null;
-
-        // let line = this._position.line;
-        // let tag: string;
-        // let txt = this.getTextBeforePosition(this._position);
-
-        // // 已经考虑到了可能会跨行的情况,目前设置就是10行,可以设置更多但可能没有必要
-        // while (this._position.line - line < 10 && line >= 0) {
-        //     if (line !== this._position.line) {
-        //         txt = this._document.lineAt(line).text;
-        //     }
-
-        //     tag = txt.match(/(?<=<)[-\w一-龟]*/)?.at(0);
-        //     if (tag && tag != "") return tag;
-        //     line--;
-        // }
-        // return;
     }
 
     /** 取得当前的attr,注意这里面没有跨行的情况, 逻辑 attrname = left + right, cause of cursor splitting */
@@ -335,21 +335,40 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
         if (!attr) return "";
         let right = "";
 
-        if (attr[2] != "") {
+        // if not null not undefined not ""
+        if (attr['groups']?.value) {
             this.hoverLocation = "atAttrValue";
+        }
+        else if (attr['groups']?.name) {
+            this.hoverLocation = "atAttr";
             right = this._document.getText(new Range(this._position, new Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "";
         }
-        else if (attr[1] != "") {
-            this.hoverLocation = "atAttr";
-        }
-
-
-        // let left = attr?.replace(/=.*$/, "");
-        return attr[1] + right;
+        return attr['groups']?.name + right;
     }
 
     /** 取得当前的attr,注意这里面没有跨行的情况, 逻辑 attr = left + right */
     getPreAttr(): string {
+        // 把最后一个等号也待着吧用于下一步判断,以及考虑中文变量
+        let attr = this.getTextBeforePosition(this._position).match(this.inAttrReg);
+        // let right = text?.includes("=") ? "" : (this._document.getText(new Range(this._position, new Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "");
+
+        if (!attr) return "";
+
+        if (attr['groups']?.value) {
+            this.inputLocation = "atAttrValue";
+        }
+        else if (attr['groups']?.suf && attr['groups']?.suf === "@") {
+            console.log('ccc_suf', attr['groups']?.suf);
+            this.inputLocation = "atEvent";
+        }
+        else if (attr['groups']?.name) {
+            this.inputLocation = "atAttr";
+        }
+
+        return attr['groups']?.name || "";
+    }
+
+    getPreAttrbak(): string {
         // 把最后一个等号也待着吧用于下一步判断,以及考虑中文变量
         let attr = this.getTextBeforePosition(this._position).match(this.inAttrReg);
         // let right = text?.includes("=") ? "" : (this._document.getText(new Range(this._position, new Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "");
@@ -367,14 +386,6 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
     }
 
 
-    /** 取出attr的匹配部分 */
-    matchAttr(reg: RegExp, txt: string): string {
-        let match: RegExpExecArray;
-        match = reg.exec(txt);
-        return !/"[^"]*"/.test(txt) && match && match[1];
-    }
-
-
     /** 同一行范围,前面的文本 */
     getTextBeforePosition(position: Position): string {
         var start = new Position(position.line, 0);
@@ -385,7 +396,6 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
     /** 取得当前位置tag建议列表 */
     getTagSuggestion() {
         let suggestions = [];
-        console.log('ccc_tagslist', Tags);
         let id = 100;
         for (let tag in Tags) {
             suggestions.push(this.buildTagSuggestion(tag, Tags[tag], id));
@@ -395,9 +405,27 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
     }
 
     /** 取得当前位置attr建议列表 */
-    getAttrSuggestion(tag: string) {
+    getAttrSuggestion(tag: string, attr: string) {
         let suggestions = [];
-        let tagAttrs: string[] = this.getTagAttrs(tag);
+        let items: string[];
+        if (this.inputLocation === "atEvent") {
+            items = Object.keys(Tags[tag].events);
+        }
+        else {
+            items = Object.keys(Tags[tag].props);
+        }
+
+        items.filter(x => x.startsWith(attr)).forEach(x => {
+            const attrItem = this.getAttrItem(tag, x);
+            const sug = this.buildAttrSuggestion({ attr: x, tag, bind: "", method: "" }, attrItem);
+            sug && suggestions.push(sug);
+        });
+
+        return suggestions;
+    }
+    getAttrSuggestion2(tag: string) {
+        let suggestions = [];
+        let tagAttrs: string[] | any = this.getTagAttrs(tag);
 
         let preText = this.getTextBeforePosition(this._position);
         let prefix = preText
@@ -405,9 +433,9 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
             .split(/\s|\(+/)
             .pop();
         // method attribute
-        const method = prefix[0] === "@";
+        const method: boolean = prefix[0] === "@";
         // bind attribute
-        const bind = prefix[0] === ":";
+        const bind: boolean = prefix[0] === ":";
 
         prefix = prefix.replace(/[:@]/, "");
 
@@ -466,7 +494,21 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
         };
     }
 
-    // 生成对于vsc格式的建议
+    buildTagHint(tag: string): string {
+        let tagVal = Tags[tag];
+        let desc = tagVal?.description || tagVal?.desc || "";
+        return "";
+    }
+    buildAttrHint(tag: string, attr: string): string {
+        let hint = JSON.stringify(this.getAttrItem(tag, attr) ?? "", null, "\n")
+            .replace(/[\{\}]/g, "")
+            .replace(/^\n+/gm, "\n")
+            .replace(/(^.[^\:\n]*$)\n*/gm, "$1")  // 消除没有:的换行,主要是[]带来的换行
+            .replace(/\[\n+/g, "[").replace(/\n+\]/g, "]");
+        return hint || "";
+    }
+
+    // 生成vsc格式的建议
     buildAttrSuggestion({ attr, tag, bind, method }, attrItem) {
         let type = attrItem.type ?? null;
         if ((method && type === "method") || (bind && type !== "method") || (!method && !bind)) {
@@ -476,15 +518,11 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
                 .replace(/(^.[^\:\n]*$)\n*/gm, "$1")  // 消除没有:的换行,主要是[]带来的换行
                 .replace(/\[\n+/g, "[").replace(/\n+\]/g, "]");
 
-
-            // optionType && (documentation += "\n" + `type: ${optionType}`);
-            // defaultValue && (documentation += "\n" + `default: ${defaultValue}`);
             let label_suf = attrItem.label_suffix ?? labelsets.label_suffix;
             let label_sum = attrItem.label_summary ?? labelsets.label_summary;
 
             return {
-                // label: attr,  
-                // 正常上面一个值就行,但是建议如下面提供更多的信息以方便使用
+                // label: attr,    // 正常用这个值就行,但是建议如下面提供更多的信息以方便使用
                 label: { label: attr, detail: label_suf, description: label_sum },
                 insertText: attrItem.type && type === "flag" ? `${attr} ` : new SnippetString(`${attr}=${this.quotes}$1${this.quotes}$0`),
                 kind: type && type === "method" ? CompletionItemKind.Method : CompletionItemKind.Property,
@@ -495,6 +533,7 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
             return;
         }
     }
+
 
     getAttrValues(tag, attr) {
         let attrItem = this.getAttrItem(tag, attr);
@@ -508,11 +547,11 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
     }
 
     getTagAttrs(tag: string) {
-        return Tags[tag]?.attributes || Object.keys(Tags[tag]?.props) || Object.keys(Tags[tag]?.Props) || [];
+        return Tags[tag]?.attributes || Object.keys(Tags[tag]?.props) || [];
     }
 
-    getAttrItem(tag: string | undefined, attr: string | undefined) {
-        return (Tags[tag]?.props || Tags[tag]?.Props)[attr];
+    getAttrItem(tag: string | undefined, attr: string | undefined): object | any {
+        return this.inputLocation === "atEvent" ? Tags[tag]?.events[attr] : Tags[tag]?.props[attr];
     }
 
     firstCharsEqual(str1: string, str2: string) {
@@ -544,24 +583,20 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
 
         let tag = this.getPreTag() as string;
         let attr: string;
-        console.log('ccc_tag', tag);
 
         if (this.inputLocation === "inTag") {
             attr = this.getPreAttr();
-            console.log('ccc_attr', attr);
         }
 
-
         if (this.inputLocation === "atTag") {
-            console.log('ccc_attag', tag);
             switch (document.languageId) {
                 case "vue":
                     return this.notInTemplate() ? [] : this.getTagSuggestion();
-                case "html":
+                case "html" || "jsx" || "tsx":
                     return this.getTagSuggestion();
             }
-        } else if (this.inputLocation === "inTag" || this.inputLocation === "atAttr") {
-            return this.getAttrSuggestion(tag);
+        } else if (this.inputLocation === "inTag" || this.inputLocation === "atAttr" || this.inputLocation === "atEvent") {
+            return this.getAttrSuggestion(tag, attr);
 
         } else if (this.inputLocation === "atAttrValue") {
             return this.getAttrValueSuggestion(tag, attr);
@@ -590,27 +625,19 @@ export class AllItemProvider implements CompletionItemProvider, HoverProvider {
 
 
         // 取得当前位置的tag
-        let tag = this.getThisTag();
+        let tag: string = this.getThisTag();
         let attr: string;
         // 取得当前位置的attr
         if (tag) attr = this.getThisAttr();
 
-        // tofix as any
         if (this.hoverLocation === "atTag") {
-            //  tofix
-            let tagVal = Tags[tag];
-            let desc = tagVal.description || tagVal.desc || "";
-            hover.contents.push(desc);
+            let hint = this.buildTagHint(tag);
+            hover.contents.push(hint);
             return hover;
         }
         else if (this.hoverLocation === "atAttr" || this.hoverLocation === "atAttrValue") {
-            let documentation = JSON.stringify(this.getAttrItem(tag, attr) ?? "", null, "\n")
-                .replace(/[\{\}]/g, "")
-                .replace(/^\n+/gm, "\n")
-                .replace(/(^.[^\:\n]*$)\n*/gm, "$1")  // 消除没有:的换行,主要是[]带来的换行
-                .replace(/\[\n+/g, "[").replace(/\n+\]/g, "]");
-
-            hover.contents.push(documentation);
+            let hint = this.buildAttrHint(tag, attr);
+            hover.contents.push(hint);
             return hover;
 
         }

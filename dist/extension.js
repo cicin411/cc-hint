@@ -4391,11 +4391,11 @@ function getJsons() {
   let jsons = {};
   for (let jset of jsonsets) {
     let dir = jset.jsonpath === "" ? path.join(__dirname, "./api/" + jset.name) : jset.jsonpath;
-    console.log("cccdir", dir);
     let json = getAllFilesFromPath(dir, "json");
     if (json != null)
       jsons = { ...jsons, ...json };
   }
+  console.log("ccc_json", jsons);
   return jsons;
 }
 function getAllFilesFromPath(dir, types) {
@@ -4421,7 +4421,7 @@ function getAllFilesFromPath(dir, types) {
     let file = JSON.parse(fs.readFileSync(path.resolve(x)).toString());
     let tag = toDash(path.basename(x, ".json"));
     if (file.hasOwnProperty(tag)) {
-    } else if (file.hasOwnProperty("props")) {
+    } else if (file.hasOwnProperty("props") || file.hasOwnProperty("events")) {
       file = { [tag]: file };
     } else {
       let tag2 = toDash(path.basename(x, ".json"));
@@ -4495,7 +4495,7 @@ var AllItemProvider = class {
   inTagReg = /(?<=(<.*> *)*)<([-\w一-龟]+)\s+[^<]*$/;
   atTagReg = /(?<=(<.*> *)*)<[-\w一-龟]*$/;
   attrReg = /(?:\(|\s*)([-\w一-龟]+)=['"][^'"]*/;
-  inAttrReg = /(?<=\s+)([-\w一-龟]+)(=['"][^'"=\<\>]*|=[^'" ]*)?$/;
+  inAttrReg = /(?<=\s+)(?<suf>@|v-on:|v-model:|:)*(?<name>[-\w一-龟]*)(?<value>=['"][^'"=\<\>]*|=[^'" ]*)?$/;
   tagStartReg = /<([-\w一-龟]*)$/;
   pugTagStartReg = /^\s*[\w-]*$/;
   size;
@@ -4549,15 +4549,29 @@ var AllItemProvider = class {
     if (!attr)
       return "";
     let right = "";
-    if (attr[2] != "") {
+    if (attr["groups"]?.value) {
       this.hoverLocation = "atAttrValue";
-      right = this._document.getText(new import_vscode.Range(this._position, new import_vscode.Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "";
-    } else if (attr[1] != "") {
+    } else if (attr["groups"]?.name) {
       this.hoverLocation = "atAttr";
+      right = this._document.getText(new import_vscode.Range(this._position, new import_vscode.Position(this._position.line + 1, 0))).match(/[-\w一-龟]*/)?.at(0) ?? "";
     }
-    return attr[1] + right;
+    return attr["groups"]?.name + right;
   }
   getPreAttr() {
+    let attr = this.getTextBeforePosition(this._position).match(this.inAttrReg);
+    if (!attr)
+      return "";
+    if (attr["groups"]?.value) {
+      this.inputLocation = "atAttrValue";
+    } else if (attr["groups"]?.suf && attr["groups"]?.suf === "@") {
+      console.log("ccc_suf", attr["groups"]?.suf);
+      this.inputLocation = "atEvent";
+    } else if (attr["groups"]?.name) {
+      this.inputLocation = "atAttr";
+    }
+    return attr["groups"]?.name || "";
+  }
+  getPreAttrbak() {
     let attr = this.getTextBeforePosition(this._position).match(this.inAttrReg);
     if (!attr)
       return "";
@@ -4568,11 +4582,6 @@ var AllItemProvider = class {
     }
     return attr[1];
   }
-  matchAttr(reg, txt) {
-    let match;
-    match = reg.exec(txt);
-    return !/"[^"]*"/.test(txt) && match && match[1];
-  }
   getTextBeforePosition(position) {
     var start = new import_vscode.Position(position.line, 0);
     var range = new import_vscode.Range(start, position);
@@ -4580,7 +4589,6 @@ var AllItemProvider = class {
   }
   getTagSuggestion() {
     let suggestions = [];
-    console.log("ccc_tagslist", Tags);
     let id = 100;
     for (let tag in Tags) {
       suggestions.push(this.buildTagSuggestion(tag, Tags[tag], id));
@@ -4588,7 +4596,22 @@ var AllItemProvider = class {
     }
     return suggestions;
   }
-  getAttrSuggestion(tag) {
+  getAttrSuggestion(tag, attr) {
+    let suggestions = [];
+    let items;
+    if (this.inputLocation === "atEvent") {
+      items = Object.keys(Tags[tag].events);
+    } else {
+      items = Object.keys(Tags[tag].props);
+    }
+    items.filter((x) => x.startsWith(attr)).forEach((x) => {
+      const attrItem = this.getAttrItem(tag, x);
+      const sug = this.buildAttrSuggestion({ attr: x, tag, bind: "", method: "" }, attrItem);
+      sug && suggestions.push(sug);
+    });
+    return suggestions;
+  }
+  getAttrSuggestion2(tag) {
     let suggestions = [];
     let tagAttrs = this.getTagAttrs(tag);
     let preText = this.getTextBeforePosition(this._position);
@@ -4643,6 +4666,15 @@ var AllItemProvider = class {
       documentation: tagVal.description || tagVal.desc
     };
   }
+  buildTagHint(tag) {
+    let tagVal = Tags[tag];
+    let desc = tagVal?.description || tagVal?.desc || "";
+    return "";
+  }
+  buildAttrHint(tag, attr) {
+    let hint = JSON.stringify(this.getAttrItem(tag, attr) ?? "", null, "\n").replace(/[\{\}]/g, "").replace(/^\n+/gm, "\n").replace(/(^.[^\:\n]*$)\n*/gm, "$1").replace(/\[\n+/g, "[").replace(/\n+\]/g, "]");
+    return hint || "";
+  }
   buildAttrSuggestion({ attr, tag, bind, method }, attrItem) {
     let type = attrItem.type ?? null;
     if (method && type === "method" || bind && type !== "method" || !method && !bind) {
@@ -4671,10 +4703,10 @@ var AllItemProvider = class {
     return options || [];
   }
   getTagAttrs(tag) {
-    return Tags[tag]?.attributes || Object.keys(Tags[tag]?.props) || Object.keys(Tags[tag]?.Props) || [];
+    return Tags[tag]?.attributes || Object.keys(Tags[tag]?.props) || [];
   }
   getAttrItem(tag, attr) {
-    return (Tags[tag]?.props || Tags[tag]?.Props)[attr];
+    return this.inputLocation === "atEvent" ? Tags[tag]?.events[attr] : Tags[tag]?.props[attr];
   }
   firstCharsEqual(str1, str2) {
     if (str2 && str1) {
@@ -4701,21 +4733,18 @@ var AllItemProvider = class {
     this.quotes = normalQuotes;
     let tag = this.getPreTag();
     let attr;
-    console.log("ccc_tag", tag);
     if (this.inputLocation === "inTag") {
       attr = this.getPreAttr();
-      console.log("ccc_attr", attr);
     }
     if (this.inputLocation === "atTag") {
-      console.log("ccc_attag", tag);
       switch (document.languageId) {
         case "vue":
           return this.notInTemplate() ? [] : this.getTagSuggestion();
         case "html":
           return this.getTagSuggestion();
       }
-    } else if (this.inputLocation === "inTag" || this.inputLocation === "atAttr") {
-      return this.getAttrSuggestion(tag);
+    } else if (this.inputLocation === "inTag" || this.inputLocation === "atAttr" || this.inputLocation === "atEvent") {
+      return this.getAttrSuggestion(tag, attr);
     } else if (this.inputLocation === "atAttrValue") {
       return this.getAttrValueSuggestion(tag, attr);
     } else {
@@ -4735,13 +4764,12 @@ var AllItemProvider = class {
     if (tag)
       attr = this.getThisAttr();
     if (this.hoverLocation === "atTag") {
-      let tagVal = Tags[tag];
-      let desc = tagVal.description || tagVal.desc || "";
-      hover.contents.push(desc);
+      let hint = this.buildTagHint(tag);
+      hover.contents.push(hint);
       return hover;
     } else if (this.hoverLocation === "atAttr" || this.hoverLocation === "atAttrValue") {
-      let documentation = JSON.stringify(this.getAttrItem(tag, attr) ?? "", null, "\n").replace(/[\{\}]/g, "").replace(/^\n+/gm, "\n").replace(/(^.[^\:\n]*$)\n*/gm, "$1").replace(/\[\n+/g, "[").replace(/\n+\]/g, "]");
-      hover.contents.push(documentation);
+      let hint = this.buildAttrHint(tag, attr);
+      hover.contents.push(hint);
       return hover;
     }
   }
@@ -4766,12 +4794,10 @@ function activate(context) {
   let triggerCharacters = ["", " ", ":", "<", '"', "'", "/", "@", "("];
   let completion = vscode.languages.registerCompletionItemProvider(selector, completionItemProvider, ...triggerCharacters);
   let hoverhint = vscode.languages.registerHoverProvider(selector, completionItemProvider);
-  let hoverhint = vscode.languages.registerHoverProvider(selector, completionItemProvider);
   let vueLanguageConfig = vscode.languages.setLanguageConfiguration("vue", { wordPattern: app.WORD_REG });
   let helloWorld = vscode.commands.registerCommand("cc-hint.helloWorld", () => {
     vscode.window.showInformationMessage("cc-hint is really useful");
   });
-  context.subscriptions.push(app, helloWorld, completion, hoverhint, vueLanguageConfig);
   context.subscriptions.push(app, helloWorld, completion, hoverhint, vueLanguageConfig);
 }
 function deactivate() {

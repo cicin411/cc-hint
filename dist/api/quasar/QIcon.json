@@ -3,6 +3,7 @@
     "meta": {
         "docsUrl": "https://v2.quasar.dev/vue-components/icon"
     },
+    "description":"this commnet added by cicin, for cc-hint testing",
     "props": {
         "size": {
             "type": "String",

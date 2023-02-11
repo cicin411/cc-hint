@@ -18,27 +18,33 @@ This Extension bases on the andv helper and was aimed largely for more vue/react
 ## Support Json Templates With 3-kind-style
 
 ```json
-    // template-style-1 ——"props" at level 3
+    // template-style-1 ——extentions suggest this kind
     {
         "tag-name":{
-            "attr-name":{
-                "props":{  // this name === "props"
-                    "prop-a":{},
-                    "prop-b":{}
-                }
-            }
-        }
-    }
-    // template-style-2 —— "props" at level 2
-    {
-        "attr-name":{
-            "props":{   // this name === "props"
+            "props":{  // ensure this name === "props"
                 "prop-a":{},
                 "prop-b":{}
+                }
+            },
+            "events":{      // ensure this name==="events"
+                "event-a":{},
+                "event-b":{}
             }
         }
     }
-    // template-style-2 —— prop-names directly
+    // template-style-2 —— extension auto convert it to style-1 
+    {
+            "props":{  // ensure this name === "props"
+                "prop-a":{},
+                "prop-b":{}
+                }
+            },
+            "events":{      // ensure this name==="events"
+                "event-a":{},
+                "event-b":{}
+            }
+    }
+    // template-style-3 —— extension auto convert it to style-1 
     // with filename like a-component.json or AComponent.json
     // then filenames  ➔ tags
     {
@@ -60,8 +66,7 @@ You are welcome for pulling any request, that will make cc-hint better.
 
 ## source code
 
-https://github.com/cicin411/cc-hint
-https://github.com/cicin411/cc-hint
+https://github.com/cicin411/cc-hint https://github.com/cicin411/cc-hint
 
 ## LICENSE
 
